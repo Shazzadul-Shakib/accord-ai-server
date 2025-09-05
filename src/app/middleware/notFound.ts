@@ -7,4 +7,3 @@ export const notFound: RequestHandler = (_req, res) => {
     error: 'The requested API endpoint does not exist',
   });
 };
-
