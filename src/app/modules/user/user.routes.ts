@@ -10,3 +10,8 @@ userRouter.post(
   validateRequest({ body: UserValidations.userValidationSchema }),
   userController.registerUser,
 );
+userRouter.post(
+  '/login',
+  validateRequest({ body: UserValidations.userLoginValidatinSchema }),
+  userController.loginUser,
+);

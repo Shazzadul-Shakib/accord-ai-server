@@ -13,4 +13,8 @@ export interface ILoginUser {
 }
 export interface IUserModel extends Model<IUser> {
   isUserExistByEmail(email: string): Promise<IUser>;
+  isPasswordMatched(
+    textPassword: string,
+    hashedPassword: string,
+  ): Promise<boolean>;
 }
