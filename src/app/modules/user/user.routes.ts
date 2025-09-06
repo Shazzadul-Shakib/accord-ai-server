@@ -15,3 +15,8 @@ userRouter.post(
   validateRequest({ body: UserValidations.userLoginValidatinSchema }),
   userController.loginUser,
 );
+userRouter.post(
+  '/refresh-token',
+  validateRequest({ cookies: UserValidations.refreshTokenValidationSchema }),
+  userController.refreshToken,
+);

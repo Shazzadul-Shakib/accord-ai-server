@@ -42,7 +42,26 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// ----- user refresh token controller ----- //
+const refreshToken = catchAsync(async (req: Request, res: Response) => {
+  const {refreshToken} = req.cookies;
+  const result = await userService.refreshToken(refreshToken);
+
+  // Set access token cookie
+  res.cookie('accessToken', result.accessToken, {
+    httpOnly: config.node_env === 'production',
+    secure: true,
+  });
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: 'New refresh token set successfully',
+  });
+});
+
 export const userController = {
-  registerUser,
+  registerUser, 
   loginUser,
+  refreshToken,
 };

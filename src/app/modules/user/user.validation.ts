@@ -25,7 +25,14 @@ const userLoginValidatinSchema = z.object({
   }),
 });
 
+const refreshTokenValidationSchema = z.object({
+  refreshToken: z.string({
+    message: 'Refresh token is required',
+  }),
+});
+
 export const UserValidations = {
   userValidationSchema,
   userLoginValidatinSchema,
+  refreshTokenValidationSchema,
 };

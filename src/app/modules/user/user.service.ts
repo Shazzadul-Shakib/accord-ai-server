@@ -4,6 +4,7 @@ import { IUser } from './user.interface';
 import { UserModel } from './user.model';
 import { createToken } from '../../utils/createToken';
 import config from '../../config';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 
 // ----- user register service ----- //
 const registerUser = async (user: IUser) => {
@@ -56,7 +57,34 @@ const loginUser = async (user: IUser) => {
   return { accessToken, refreshToken };
 };
 
+// ----- refresh token service ----- //
+const refreshToken = async (refreshToken: string) => {
+  // verify refresh token
+  const decoded = jwt.verify(
+    refreshToken,
+    config.jwt_refresh_secret as string,
+  ) as JwtPayload;
+  if (!decoded) {
+    throw new AppError(status.UNAUTHORIZED, 'Invalid refresh token!');
+  }
+  // check if user exist
+  const isUserExist = await UserModel.isUserExistByEmail(decoded.email);
+  if (!isUserExist) {
+    throw new AppError(status.NOT_FOUND, 'User not found!');
+  }
+  // create new access token
+  const accessToken = createToken(
+    {
+      email: isUserExist.email,
+    },
+    config.jwt_access_secret as string,
+    config.jwt_access_expires_in as string,
+  );
+  return { accessToken };
+};
+
 export const userService = {
   registerUser,
   loginUser,
+  refreshToken,
 };

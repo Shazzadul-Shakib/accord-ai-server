@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start-dev": "ts-node-dev --respawn --transpile-only --loader ts-node/esm src/server.ts",
+    "dev": "ts-node-dev --respawn --transpile-only --loader ts-node/esm src/server.ts",
     "start": "node dist/server.js",
     "build": "tsc",
     "lint": "eslint src/**/*.ts",
@@ -17,7 +17,9 @@
   "license": "ISC",
   "dependencies": {
     "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.9",
     "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
