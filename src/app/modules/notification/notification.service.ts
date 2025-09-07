@@ -1,3 +1,4 @@
+import { JwtPayload } from "jsonwebtoken";
 import { INotification } from "./notification.interface";
 import { NotificationModel } from "./notification.model";
 
@@ -7,6 +8,16 @@ const createNotificationService = async (payload: INotification) => {
   return result;
 };
 
+// ----- get user notifications service ----- //
+const getUserNotificationsService = async (user: JwtPayload) => {
+  const result = await NotificationModel.find({
+    recipientId: user.userId,
+  });
+  
+  return result;
+};
+
 export const notificationServices = {
   createNotificationService,
+  getUserNotificationsService,
 };

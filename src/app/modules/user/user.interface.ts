@@ -18,4 +18,3 @@ export interface IUserModel extends Model<IUser> {
     hashedPassword: string,
   ): Promise<boolean>;
 }
-

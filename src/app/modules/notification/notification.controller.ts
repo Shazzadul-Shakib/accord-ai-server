@@ -16,6 +16,19 @@ const cretaeNotification= catchAsync( async(req:Request,res:Response)=>{
     })
 })
 
-export const notificationController={
-    cretaeNotification
-}
+// ----- get user specified notifications controller ----- //
+const getUserNotifications = catchAsync(async (req: Request, res: Response) => {
+    const result = await notificationServices.getUserNotificationsService(req.user);
+
+    sendResponse(res,{
+        statusCode:httpStatus.OK,
+        success:true,
+        message:' Notifications retrieved successfully',
+        data:result
+    })
+});
+
+export const notificationController = {
+  cretaeNotification,
+  getUserNotifications,
+};
