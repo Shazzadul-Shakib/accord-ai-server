@@ -15,7 +15,7 @@ const notificationSchema = new Schema<INotification>(
     },
     topicId: {
       type: Schema.Types.ObjectId,
-      ref: 'Topic',
+      ref: 'TopicRequest',
       required: true,
     },
     isRead: {

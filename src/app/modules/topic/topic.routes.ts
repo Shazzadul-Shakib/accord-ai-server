@@ -14,4 +14,11 @@ topicRouter.post(
   }),
   topicController.createTopicRequest,
 );
-
+topicRouter.patch(
+  '/:topicRequestId/update-topic-request-response',
+  authGuard(),
+  // validateRequest({
+  //   body: topicRequestValidation.updateTopicRequestValidationSchema,
+  // }),
+  topicController.updateTopicRequestResponse,
+);
