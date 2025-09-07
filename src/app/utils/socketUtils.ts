@@ -2,7 +2,7 @@ import { io } from '../../server';
 import { MessageData } from '../interface/message.interface';
 import { NotificationData } from '../interface/notification.interface';
 
-// Send notification to specific users
+// ----- Send notification to specific users ----- //
 export const sendNotificationToUsers = (
   userIds: string[],
   notification: NotificationData,
@@ -16,7 +16,7 @@ export const sendNotificationToUsers = (
   });
 };
 
-// Send notification to a topic room
+// ----- Send notification to a topic room ----- //
 export const sendNotificationToTopic = (
   topicId: string,
   notification: NotificationData,
@@ -34,7 +34,7 @@ export const sendDirectMessage = (
   recipientId: string,
   message: MessageData,
 ) => {
-  // Send to recipient
+  // ----- Send to recipient ----- //
   io.to(`user:${recipientId}`).emit('direct_message', {
     ...message,
     senderId,
@@ -42,7 +42,7 @@ export const sendDirectMessage = (
     timestamp: new Date(),
   });
 
-  // Send acknowledgment to sender
+  // ----- Send acknowledgment to sender ----- //
   io.to(`user:${senderId}`).emit('message_sent', {
     messageId: message._id,
     recipientId,
@@ -50,7 +50,7 @@ export const sendDirectMessage = (
   });
 };
 
-// Broadcast user online status
+// ----- Broadcast user online status ----- //
 export const broadcastUserOnlineStatus = (
   userId: string,
   isOnline: boolean,
@@ -62,7 +62,7 @@ export const broadcastUserOnlineStatus = (
   });
 };
 
-// Send typing indicator to topic room
+// ----- Send typing indicator to topic room ----- //
 export const sendTypingToTopic = (
   topicId: string,
   userId: string,
@@ -78,13 +78,13 @@ export const sendTypingToTopic = (
   });
 };
 
-// *** MISSING FUNCTION *** - Send message to topic room (group chat)
+// ----- Send message to topic room (group chat) ----- //
 export const sendMessageToTopic = (
   topicId: string,
   senderId: string,
   message: MessageData,
 ) => {
-  // Send message to all users in the topic room
+  // ----- Send message to all users in the topic room ----- //
   io.to(`topic:${topicId}`).emit('topic_message', {
     ...message,
     topicId,
@@ -92,7 +92,7 @@ export const sendMessageToTopic = (
     createdAt: new Date(),
   });
 
-  // Send acknowledgment to sender
+  // ----- Send acknowledgment to sender ----- //
   io.to(`user:${senderId}`).emit('message_sent', {
     messageId: message._id,
     topicId,
@@ -100,4 +100,3 @@ export const sendMessageToTopic = (
     timestamp: new Date(),
   });
 };
-

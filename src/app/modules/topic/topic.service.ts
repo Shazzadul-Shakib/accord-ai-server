@@ -1,5 +1,6 @@
 import AppError from '../../errorHandlers/appError';
 import { sendNotificationToUsers } from '../../utils/socketUtils';
+import { NotificationModel } from '../notification/notification.model';
 import { ITopicRequest } from './topic.interface';
 import { TopicRequestModel } from './topic.model';
 import httpStatus from 'http-status';
@@ -22,7 +23,7 @@ const createTopicRequestService = async (data: ITopicRequest) => {
     responses: uniqueMembers.map(u => ({ user: u })),
   });
 
-  // Send real-time notifications to all members
+  // ----- Send real-time notifications to all members ----- //
   const notificationData = {
     type: 'topic_request' as const,
     title: topic,
@@ -35,7 +36,7 @@ const createTopicRequestService = async (data: ITopicRequest) => {
     createdAt: new Date(),
   };
 
-  // Filter out the creator from notification recipients
+  // ----- Filter out the creator from notification recipients ----- //
   const notificationRecipients = uniqueMembers.filter(memberId => {
     const creatorString = creator.toString();
     const memberString = memberId.toString();
@@ -45,6 +46,15 @@ const createTopicRequestService = async (data: ITopicRequest) => {
   if (notificationRecipients.length > 0) {
     try {
       sendNotificationToUsers(notificationRecipients, notificationData);
+      // ----- Store notifications in DB using NotificationModel directly for better performance----- //
+      await NotificationModel.create(
+        notificationRecipients.map(recipient => ({
+          recipientId: recipient,
+          senderId: creator,
+          isRead: false,
+          topicId: result._id,
+        })),
+      );
     } catch {
       throw new AppError(
         httpStatus.INTERNAL_SERVER_ERROR,
