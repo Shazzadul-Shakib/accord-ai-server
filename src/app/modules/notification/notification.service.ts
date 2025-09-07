@@ -1,6 +1,6 @@
-import { JwtPayload } from "jsonwebtoken";
-import { INotification } from "./notification.interface";
-import { NotificationModel } from "./notification.model";
+import { JwtPayload } from 'jsonwebtoken';
+import { INotification } from './notification.interface';
+import { NotificationModel } from './notification.model';
 
 // ----- create notification service ------ //
 const createNotificationService = async (payload: INotification) => {
@@ -12,8 +12,11 @@ const createNotificationService = async (payload: INotification) => {
 const getUserNotificationsService = async (user: JwtPayload) => {
   const result = await NotificationModel.find({
     recipientId: user.userId,
-  });
-  
+  })
+    .populate('senderId', 'name email _id')
+    .populate('topicId', '_id topic status')
+    .sort({ createdAt: -1 });
+
   return result;
 };
 

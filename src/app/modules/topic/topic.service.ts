@@ -1,9 +1,11 @@
 import AppError from '../../errorHandlers/appError';
 import { sendNotificationToUsers } from '../../utils/socketUtils';
 import { NotificationModel } from '../notification/notification.model';
-import { ITopicRequest } from './topic.interface';
+import { ChatRoomModel } from '../room/room.model';
+import { ITopicRequest, ITopicResponse } from './topic.interface';
 import { TopicRequestModel } from './topic.model';
 import httpStatus from 'http-status';
+import { JwtPayload } from 'jsonwebtoken';
 
 // ----- create topic request service ----- //
 const createTopicRequestService = async (data: ITopicRequest) => {
@@ -46,7 +48,7 @@ const createTopicRequestService = async (data: ITopicRequest) => {
   if (notificationRecipients.length > 0) {
     try {
       sendNotificationToUsers(notificationRecipients, notificationData);
-      // ----- Store notifications in DB using NotificationModel directly for better performance----- //
+      // ----- Store notifications in DB ----- //
       await NotificationModel.create(
         notificationRecipients.map(recipient => ({
           recipientId: recipient,
@@ -66,6 +68,107 @@ const createTopicRequestService = async (data: ITopicRequest) => {
   return result;
 };
 
+// ----- update topic request service ----- //
+const updateTopicRequestResponseService = async (
+  data: Pick<ITopicResponse, 'status'>,
+  topicRequestId: string,
+  user: JwtPayload,
+) => {
+  const topicRequest = await TopicRequestModel.findById(topicRequestId);
+  if (!topicRequest) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Topic request not found');
+  }
+
+  const respondedUser = user.userId;
+
+  // ----- prevent creator from responding ----- //
+  if (topicRequest.creator.toString() === respondedUser) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Creator cannot respond to their own topic request',
+    );
+  }
+
+  const userStatus = data.status;
+
+  // ----- check if the user already exists in responses ----- //
+  const userResponse = topicRequest.responses.find(
+    response => response.user.toString() === respondedUser,
+  );
+  if (!userResponse) {
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      'User response not found in topic request',
+    );
+  }
+
+  // ----- update the user's response ----- //
+  const updatedRequest = await TopicRequestModel.findByIdAndUpdate(
+    topicRequestId,
+    { $set: { 'responses.$[elem].status': userStatus } },
+    {
+      arrayFilters: [{ 'elem.user': respondedUser }],
+      new: true,
+    },
+  );
+
+  if (!updatedRequest) {
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      'Failed to update topic request',
+    );
+  }
+
+  // ----- check if the request should now be "active" ----- //
+  const atLeastOneAccepted = updatedRequest.responses.some(
+    resp => resp.status === 'accepted',
+  );
+
+  // ----- check no one accepted ----- //
+  const noOneAccepted = updatedRequest.responses.every(
+    resp => resp.status !== 'accepted',
+  );
+
+  // ----- topic request becomes active with whoever accepted ----- //
+  if (atLeastOneAccepted && updatedRequest.status === 'pending') {
+    const session = await TopicRequestModel.startSession();
+    try {
+      session.startTransaction();
+
+      updatedRequest.status = 'active';
+      await updatedRequest.save({ session });
+
+      await ChatRoomModel.create(
+        [
+          {
+            topic: updatedRequest._id,
+            members: [...updatedRequest.members, updatedRequest.creator],
+          },
+        ],
+        { session },
+      );
+
+      await session.commitTransaction();
+    } catch {
+      await session.abortTransaction();
+      throw new AppError(
+        httpStatus.INTERNAL_SERVER_ERROR,
+        'Failed to activate topic request and create chat room',
+      );
+    } finally {
+      session.endSession();
+    }
+  }
+  // ----- topic request expires if no one accepted ----- //
+  if (noOneAccepted && updatedRequest.status === 'pending') {
+    updatedRequest.status = 'expired';
+    await updatedRequest.save();
+  }
+
+  return updatedRequest;
+};
+
 export const topicServices = {
   createTopicRequestService,
+  updateTopicRequestResponseService,
 };
