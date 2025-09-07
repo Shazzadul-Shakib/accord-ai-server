@@ -41,6 +41,7 @@ const loginUser = async (user: IUser) => {
   const accessToken = createToken(
     {
       email: isUserExist.email,
+      userId: isUserExist._id,
     },
     config.jwt_access_secret as string,
     config.jwt_access_expires_in as string,
@@ -76,6 +77,7 @@ const refreshToken = async (refreshToken: string) => {
   const accessToken = createToken(
     {
       email: isUserExist.email,
+      userId: isUserExist._id,
     },
     config.jwt_access_secret as string,
     config.jwt_access_expires_in as string,

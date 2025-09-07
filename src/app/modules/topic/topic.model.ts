@@ -12,7 +12,6 @@ const topicRequestSchema = new Schema(
     },
     topic: { type: String, required: true, index: true },
     members: [{ type: Types.ObjectId, ref: 'User', required: true }],
-    // request-level lifecycle; becomes "active" once a room is created (first acceptance)
     status: {
       type: String,
       enum: ['pending', 'active', 'expired'],
