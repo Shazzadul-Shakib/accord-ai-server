@@ -1,0 +1,23 @@
+import { catchAsync } from '../../utils/catchAsync';
+import { Request, Response } from 'express';
+import { sendResponse } from '../../utils/sendResponse';
+import httpStatus from 'http-status';
+import { chatRoomServices } from './room.service';
+import { Types } from 'mongoose';
+
+// ----- delete chatroom controller ----- //
+const deleteChatRoom = catchAsync(async (req: Request, res: Response) => {
+  const { roomId } = req.params;
+  const { userId } = req.user;
+  await chatRoomServices.deleteChatRoomService(roomId as string, userId as Types.ObjectId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Chat room deleted successfully',
+  });
+});
+
+export const roomController = {
+  deleteChatRoom,
+};
