@@ -1,5 +1,4 @@
 import { io } from '../../server';
-import { MessageData } from '../interface/message.interface';
 import { NotificationData } from '../interface/notification.interface';
 
 // ----- Send notification to specific users ----- //
@@ -17,38 +16,38 @@ export const sendNotificationToUsers = (
 };
 
 // ----- Send notification to a topic room ----- //
-export const sendNotificationToTopic = (
-  topicId: string,
-  notification: NotificationData,
-) => {
-  io.to(`topic:${topicId}`).emit('topic_notification', {
-    id: Date.now().toString(),
-    topicId,
-    ...notification,
-  });
-};
+// export const sendNotificationToTopic = (
+//   topicId: string,
+//   notification: NotificationData,
+// ) => {
+//   io.to(`topic:${topicId}`).emit('topic_notification', {
+//     id: Date.now().toString(),
+//     topicId,
+//     ...notification,
+//   });
+// };
 
 // Send direct message between users
-export const sendDirectMessage = (
-  senderId: string,
-  recipientId: string,
-  message: MessageData,
-) => {
-  // ----- Send to recipient ----- //
-  io.to(`user:${recipientId}`).emit('direct_message', {
-    ...message,
-    senderId,
-    recipientId,
-    timestamp: new Date(),
-  });
+// export const sendDirectMessage = (
+//   senderId: string,
+//   recipientId: string,
+//   message: MessageData,
+// ) => {
+//   // ----- Send to recipient ----- //
+//   io.to(`user:${recipientId}`).emit('direct_message', {
+//     ...message,
+//     senderId,
+//     recipientId,
+//     timestamp: new Date(),
+//   });
 
-  // ----- Send acknowledgment to sender ----- //
-  io.to(`user:${senderId}`).emit('message_sent', {
-    messageId: message._id,
-    recipientId,
-    status: 'delivered',
-  });
-};
+//   // ----- Send acknowledgment to sender ----- //
+//   io.to(`user:${senderId}`).emit('message_sent', {
+//     messageId: message._id,
+//     recipientId,
+//     status: 'delivered',
+//   });
+// };
 
 // ----- Broadcast user online status ----- //
 export const broadcastUserOnlineStatus = (
@@ -79,24 +78,32 @@ export const sendTypingToTopic = (
 };
 
 // ----- Send message to topic room (group chat) ----- //
-export const sendMessageToTopic = (
-  topicId: string,
+export const sendMessageToRoom = (
+  roomId: string,
   senderId: string,
-  message: MessageData,
+  text: string,
 ) => {
   // ----- Send message to all users in the topic room ----- //
-  io.to(`topic:${topicId}`).emit('topic_message', {
-    ...message,
-    topicId,
+  io.to(`topic:${roomId}`).emit('send_message', {
+    text,
+    roomId,
     senderId,
     createdAt: new Date(),
   });
 
   // ----- Send acknowledgment to sender ----- //
   io.to(`user:${senderId}`).emit('message_sent', {
-    messageId: message._id,
-    topicId,
+    text,
+    roomId,
     status: 'delivered',
     timestamp: new Date(),
+  });
+
+  // broadcast to everyone in the room
+  io.to(`room:${roomId}`).emit('room_message', {
+    text,
+    roomId,
+    senderId,
+    createdAt: new Date(),
   });
 };
