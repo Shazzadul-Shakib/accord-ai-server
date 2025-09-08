@@ -18,7 +18,7 @@ async function main() {
     // Initialize Socket.IO
     io = new SocketServer(server, {
       cors: {
-        origin: process.env.CLIENT_URL || 'http://127.0.0.1:5500',
+        origin: ['http://127.0.0.1:5500', 'http://127.0.0.1:5501'],
         methods: ['GET', 'POST'],
       },
     });
@@ -36,8 +36,9 @@ async function main() {
 main();
 
 //  ----- handle unhandledRejections & uncaughtExceptions ----- //
-process.on('unhandledRejection', () => {
+process.on('unhandledRejection', (reason, promise) => {
   console.log(`😈 unhandledRejection is detected , shutting down ...`);
+  console.log('Unhandled Rejection at:', promise, 'reason:', reason);
 
   if (server) {
     server.close(() => {
