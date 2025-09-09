@@ -1,5 +1,4 @@
 import { io } from '../../server';
-import { MessageData } from '../interface/message.interface';
 import { NotificationData } from '../interface/notification.interface';
 
 // ----- Send notification to specific users ----- //
@@ -17,38 +16,38 @@ export const sendNotificationToUsers = (
 };
 
 // ----- Send notification to a topic room ----- //
-export const sendNotificationToTopic = (
-  topicId: string,
-  notification: NotificationData,
-) => {
-  io.to(`topic:${topicId}`).emit('topic_notification', {
-    id: Date.now().toString(),
-    topicId,
-    ...notification,
-  });
-};
+// export const sendNotificationToTopic = (
+//   topicId: string,
+//   notification: NotificationData,
+// ) => {
+//   io.to(`topic:${topicId}`).emit('topic_notification', {
+//     id: Date.now().toString(),
+//     topicId,
+//     ...notification,
+//   });
+// };
 
 // Send direct message between users
-export const sendDirectMessage = (
-  senderId: string,
-  recipientId: string,
-  message: MessageData,
-) => {
-  // ----- Send to recipient ----- //
-  io.to(`user:${recipientId}`).emit('direct_message', {
-    ...message,
-    senderId,
-    recipientId,
-    timestamp: new Date(),
-  });
+// export const sendDirectMessage = (
+//   senderId: string,
+//   recipientId: string,
+//   message: MessageData,
+// ) => {
+//   // ----- Send to recipient ----- //
+//   io.to(`user:${recipientId}`).emit('direct_message', {
+//     ...message,
+//     senderId,
+//     recipientId,
+//     timestamp: new Date(),
+//   });
 
-  // ----- Send acknowledgment to sender ----- //
-  io.to(`user:${senderId}`).emit('message_sent', {
-    messageId: message._id,
-    recipientId,
-    status: 'delivered',
-  });
-};
+//   // ----- Send acknowledgment to sender ----- //
+//   io.to(`user:${senderId}`).emit('message_sent', {
+//     messageId: message._id,
+//     recipientId,
+//     status: 'delivered',
+//   });
+// };
 
 // ----- Broadcast user online status ----- //
 export const broadcastUserOnlineStatus = (
@@ -79,24 +78,105 @@ export const sendTypingToTopic = (
 };
 
 // ----- Send message to topic room (group chat) ----- //
-export const sendMessageToTopic = (
-  topicId: string,
-  senderId: string,
-  message: MessageData,
-) => {
-  // ----- Send message to all users in the topic room ----- //
-  io.to(`topic:${topicId}`).emit('topic_message', {
-    ...message,
-    topicId,
-    senderId,
-    createdAt: new Date(),
-  });
+// export const sendMessageToRoom = (
+//   roomId: string,
+//   senderId: string,
+//   text: string,
+//   isTyping: boolean,
+// ) => {
+//   // ----- Send message to all users in the topic room ----- //
+//   io.to(`topic:${roomId}`).emit('send_message', {
+//     text,
+//     roomId,
+//     senderId,
+//     createdAt: new Date(),
+//   });
 
-  // ----- Send acknowledgment to sender ----- //
-  io.to(`user:${senderId}`).emit('message_sent', {
-    messageId: message._id,
-    topicId,
-    status: 'delivered',
-    timestamp: new Date(),
-  });
+//   // ----- Send acknowledgment to sender ----- //
+//   io.to(`user:${senderId}`).emit('message_sent', {
+//     text,
+//     roomId,
+//     status: 'delivered',
+//     timestamp: new Date(),
+//   });
+
+//   // broadcast to everyone in the room
+//   io.to(`room:${roomId}`).emit('room_message', {
+//     text,
+//     roomId,
+//     senderId,
+//     createdAt: new Date(),
+//   });
+
+//   io.to(`topic:${roomId}`).emit('user_typing', {
+//     roomId,
+//     senderId,
+//     isTyping,
+//   });
+// };
+// 
+// ----- Send message to topic room (group chat) ----- //
+export const sendMessageToRoom = (
+  roomId: string,
+  senderId: string,
+  text: string,
+  isTyping: boolean = false,
+) => {
+  // Handle typing indicator
+  if (text === "" && typeof isTyping === "boolean") {
+    // This is a typing indicator event
+    io.to(`topic:${roomId}`).emit('user_typing', {
+      roomId,
+      senderId,
+      isTyping,
+    });
+    
+    io.to(`room:${roomId}`).emit('user_typing', {
+      roomId,
+      senderId,
+      isTyping,
+    });
+    return;
+  }
+
+  // Handle actual message sending
+  if (text && text.trim() !== "") {
+    const messageData = {
+      text,
+      roomId,
+      senderId,
+      createdAt: new Date(),
+      _id: new Date().getTime().toString(), // or use proper ObjectId if using MongoDB
+    };
+
+    // ----- Send message to all users in the topic room ----- //
+    io.to(`topic:${roomId}`).emit('send_message', messageData);
+
+    // ----- Broadcast to everyone in the room ----- //
+    io.to(`room:${roomId}`).emit('room_message', messageData);
+
+    // ----- Send acknowledgment to sender ----- //
+    io.to(`user:${senderId}`).emit('message_sent', {
+      text,
+      roomId,
+      senderId,
+      status: 'delivered',
+      timestamp: new Date(),
+      _id: messageData._id,
+    });
+
+    // Stop typing indicator for this user after sending message
+    io.to(`topic:${roomId}`).emit('user_typing', {
+      roomId,
+      senderId,
+      isTyping: false,
+    });
+
+    io.to(`room:${roomId}`).emit('user_typing', {
+      roomId,
+      senderId,
+      isTyping: false,
+    });
+  }
 };
+

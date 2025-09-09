@@ -5,6 +5,7 @@ import { AuthenticatedSocket } from '../interface/socket.interface';
 import AppError from '../errorHandlers/appError';
 import httpStatus from 'http-status';
 import { userSockets } from '../utils/getSocketId';
+import { messageService } from '../modules/message/message.service';
 
 export const initializeSocket = (io: SocketServer) => {
   // ----- Authentication middleware ----- //
@@ -41,14 +42,32 @@ export const initializeSocket = (io: SocketServer) => {
     socket.join(personalRoom);
 
     // ----- Handle joining topic rooms ----- //
-    socket.on('join_topic', (topicId: string) => {
-      socket.join(`topic:${topicId}`);
+    socket.on('join_room', (roomId: string) => {
+      socket.join(`room:${roomId}`);
+      console.log(`📥 User ${socket.userId} joined room ${roomId}`);
+    });
+
+    // ----- Handle sending messages ----- //
+    socket.on('send_message', async ({ roomId, text, isTyping }) => {
+      try {
+        await messageService.sendMessageToRoomService(
+          { text, isTyping },
+          { roomId },
+          { userId: socket.userId }, // user
+        );
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          socket.emit('error_message', { error: err.message });
+        } else {
+          socket.emit('error_message', { error: 'Unknown error' });
+        }
+      }
     });
 
     // ----- Handle leaving topic rooms ----- //
-    socket.on('leave_topic', (topicId: string) => {
-      socket.leave(`topic:${topicId}`);
-      console.log(`📤 User ${socket.userId} left topic ${topicId}`);
+    socket.on('leave_room', (roomId: string) => {
+      socket.leave(`room:${roomId}`);
+      console.log(`📤 User ${socket.userId} left room ${roomId}`);
     });
 
     // ----- Handle disconnect ----- //
