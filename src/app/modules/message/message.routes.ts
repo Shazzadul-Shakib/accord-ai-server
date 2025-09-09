@@ -12,3 +12,9 @@ messageRouter.post(
   validateRequest({ body: messageValidations.messageValidationSchema }),
   messageController.sendMessageToRoom,
 );
+
+messageRouter.delete(
+  '/:roomId/:messageId',
+  authGuard(),
+  messageController.deleteMessageFromRoom,
+);

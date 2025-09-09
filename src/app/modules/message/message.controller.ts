@@ -5,8 +5,8 @@ import httpStatus from 'http-status';
 import { messageService } from './message.service';
 import { JwtPayload } from 'jsonwebtoken';
 
+// ----- send message to the room controller ----- //
 const sendMessageToRoom = catchAsync(async (req: Request, res: Response) => {
-  
   const result = await messageService.sendMessageToRoomService(
     req.body,
     { roomId: req.params.roomId as string },
@@ -21,6 +21,26 @@ const sendMessageToRoom = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// ----- delete message from the room controller ----- //
+const deleteMessageFromRoom = catchAsync(
+  async (req: Request, res: Response) => {
+    await messageService.deleteMessageFromRoomService(
+      {
+        roomId: req.params.roomId as string,
+        messageId: req.params.messageId as string,
+      },
+      req.user as JwtPayload,
+    );
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Message deleted successfully from the room',
+    });
+  },
+);
+
 export const messageController = {
   sendMessageToRoom,
+  deleteMessageFromRoom,
 };
