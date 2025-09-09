@@ -5,6 +5,7 @@ import { UserModel } from './user.model';
 import { createToken } from '../../utils/createToken';
 import config from '../../config';
 import jwt, { JwtPayload } from 'jsonwebtoken';
+import { Types } from 'mongoose';
 
 // ----- user register service ----- //
 const registerUser = async (user: IUser) => {
@@ -58,6 +59,19 @@ const loginUser = async (user: IUser) => {
   return { accessToken, refreshToken };
 };
 
+// ----- user login service ----- //
+const getAllUsers = async (userId: Types.ObjectId) => {
+  // ----- check if user exist by id ----- //
+  const isUserExist = await UserModel.findById(userId);
+  if (!isUserExist) {
+    throw new AppError(status.NOT_FOUND, 'User not found!');
+  }
+  // ----- get all users except requested user ----- //
+  const result = await UserModel.find({ _id: { $ne: userId } }).select('name _id');
+
+  return result;
+};
+
 // ----- refresh token service ----- //
 const refreshToken = async (refreshToken: string) => {
   // verify refresh token
@@ -88,5 +102,6 @@ const refreshToken = async (refreshToken: string) => {
 export const userService = {
   registerUser,
   loginUser,
+  getAllUsers,
   refreshToken,
 };

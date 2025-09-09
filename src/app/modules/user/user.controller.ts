@@ -43,8 +43,21 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
 });
 
 // ----- user refresh token controller ----- //
+const getAllUsers = catchAsync(async (req: Request, res: Response) => {
+  const {userId}=req.user;
+  const result = await userService.getAllUsers(userId);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: 'All users retried successfully',
+    data: result,
+  });
+});
+
+// ----- user refresh token controller ----- //
 const refreshToken = catchAsync(async (req: Request, res: Response) => {
-  const {refreshToken} = req.cookies;
+  const { refreshToken } = req.cookies;
   const result = await userService.refreshToken(refreshToken);
 
   // Set access token cookie
@@ -61,7 +74,8 @@ const refreshToken = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const userController = {
-  registerUser, 
+  registerUser,
   loginUser,
+  getAllUsers,
   refreshToken,
 };
