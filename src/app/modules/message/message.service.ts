@@ -57,13 +57,13 @@ const deleteMessageFromRoomService = async (
   const { roomId, messageId } = params;
   const { userId } = user;
 
-  // 1. Check if chat room exists
+  // ----- Check if chat room exists ----- //
   const chatRoom = await ChatRoomModel.findById(roomId).lean();
   if (!chatRoom) {
     throw new AppError(httpStatus.NOT_FOUND, 'Chat room not found');
   }
 
-  // 2. Check if user is a member of the room
+  // ----- Check if user is a member of the room ----- //
   if (!chatRoom.members.some(m => m.toString() === userId.toString())) {
     throw new AppError(
       httpStatus.FORBIDDEN,
@@ -71,13 +71,13 @@ const deleteMessageFromRoomService = async (
     );
   }
 
-  // 3. Check if message exists
+  // ----- Check if message exists ----- //
   const message = await MessageModel.findById(messageId).lean();
   if (!message) {
     throw new AppError(httpStatus.NOT_FOUND, 'Message not found');
   }
-    
-  // 4. Check if user is the sender of the message
+
+  // ----- Check if user is the sender of the message ----- //
   if (message.sender.toString() !== userId.toString()) {
     throw new AppError(
       httpStatus.FORBIDDEN,
@@ -85,13 +85,62 @@ const deleteMessageFromRoomService = async (
     );
   }
 
-  // 5. Delete the message
-  await MessageModel.findByIdAndDelete(messageId);
+  // ----- Delete the message ----- //
+  const result = await MessageModel.findByIdAndDelete(messageId);
 
-  return { success: true };
+  return result;
+};
+
+// ----- update message from room service ----- //
+const updateMessageFromRoomService = async (
+  data: { text: string },
+  params: { roomId: string; messageId: string },
+  user: JwtPayload,
+) => {
+  const { text } = data;
+  const { roomId, messageId } = params;
+  const { userId } = user;
+
+  // ----- Check if chat room exists ----- //
+  const chatRoom = await ChatRoomModel.findById(roomId).lean();
+  if (!chatRoom) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Chat room not found');
+  }
+
+  // -----  Check if user is a member of the room ----- //
+  if (!chatRoom.members.some(m => m.toString() === userId.toString())) {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      'You are not a member of this room',
+    );
+  }
+
+  // ----- Check if message exists ----- //
+  const message = await MessageModel.findById(messageId).lean();
+  if (!message) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Message not found');
+  }
+
+  // ----- Check if user is the sender of the message ----- //
+  if (message.sender.toString() !== userId.toString()) {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      'You are not the sender of this message',
+    );
+  }
+
+  // -----  update the message ----- //
+  const result = await MessageModel.findByIdAndUpdate(
+    messageId,
+    { text },
+    { new: true },
+  );
+
+  return result;
 };
 
 export const messageService = {
   sendMessageToRoomService,
   deleteMessageFromRoomService,
+  updateMessageFromRoomService,
 };

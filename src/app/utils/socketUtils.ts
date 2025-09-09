@@ -15,40 +15,6 @@ export const sendNotificationToUsers = (
   });
 };
 
-// ----- Send notification to a topic room ----- //
-// export const sendNotificationToTopic = (
-//   topicId: string,
-//   notification: NotificationData,
-// ) => {
-//   io.to(`topic:${topicId}`).emit('topic_notification', {
-//     id: Date.now().toString(),
-//     topicId,
-//     ...notification,
-//   });
-// };
-
-// Send direct message between users
-// export const sendDirectMessage = (
-//   senderId: string,
-//   recipientId: string,
-//   message: MessageData,
-// ) => {
-//   // ----- Send to recipient ----- //
-//   io.to(`user:${recipientId}`).emit('direct_message', {
-//     ...message,
-//     senderId,
-//     recipientId,
-//     timestamp: new Date(),
-//   });
-
-//   // ----- Send acknowledgment to sender ----- //
-//   io.to(`user:${senderId}`).emit('message_sent', {
-//     messageId: message._id,
-//     recipientId,
-//     status: 'delivered',
-//   });
-// };
-
 // ----- Broadcast user online status ----- //
 export const broadcastUserOnlineStatus = (
   userId: string,
@@ -114,7 +80,7 @@ export const sendTypingToTopic = (
 //     isTyping,
 //   });
 // };
-// 
+//
 // ----- Send message to topic room (group chat) ----- //
 export const sendMessageToRoom = (
   roomId: string,
@@ -123,14 +89,14 @@ export const sendMessageToRoom = (
   isTyping: boolean = false,
 ) => {
   // Handle typing indicator
-  if (text === "" && typeof isTyping === "boolean") {
+  if (text === '' && typeof isTyping === 'boolean') {
     // This is a typing indicator event
     io.to(`topic:${roomId}`).emit('user_typing', {
       roomId,
       senderId,
       isTyping,
     });
-    
+
     io.to(`room:${roomId}`).emit('user_typing', {
       roomId,
       senderId,
@@ -140,7 +106,7 @@ export const sendMessageToRoom = (
   }
 
   // Handle actual message sending
-  if (text && text.trim() !== "") {
+  if (text && text.trim() !== '') {
     const messageData = {
       text,
       roomId,
@@ -179,4 +145,3 @@ export const sendMessageToRoom = (
     });
   }
 };
-

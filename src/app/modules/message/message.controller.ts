@@ -40,7 +40,29 @@ const deleteMessageFromRoom = catchAsync(
   },
 );
 
+// ----- update message from the room controller ----- //
+const updateMessageFromRoom = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await messageService.updateMessageFromRoomService(
+      { text: req.body.text as string },
+      {
+        roomId: req.params.roomId as string,
+        messageId: req.params.messageId as string,
+      },
+      req.user as JwtPayload,
+    );
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Message updated successfully from the room',
+      data: result,
+    });
+  },
+);
+
 export const messageController = {
   sendMessageToRoom,
   deleteMessageFromRoom,
+  updateMessageFromRoom,
 };

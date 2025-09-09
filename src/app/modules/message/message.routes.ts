@@ -18,3 +18,10 @@ messageRouter.delete(
   authGuard(),
   messageController.deleteMessageFromRoom,
 );
+
+messageRouter.patch(
+  '/:roomId/:messageId',
+  authGuard(),
+  validateRequest({ body: messageValidations.messageValidationSchema }),
+  messageController.updateMessageFromRoom,
+);
