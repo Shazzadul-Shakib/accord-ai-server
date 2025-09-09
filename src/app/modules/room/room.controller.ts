@@ -18,6 +18,21 @@ const deleteChatRoom = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// ----- get all messages from chatroom controller ----- //
+const getAllMessagesFromChatRoom = catchAsync(async (req: Request, res: Response) => {
+  const { roomId } = req.params;
+  const { userId } = req.user;
+  const result = await chatRoomServices.getAllMessagesFromChatRoomService(roomId as string, userId as Types.ObjectId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Chat room deleted successfully',
+    data:result
+  });
+});
+
 export const roomController = {
   deleteChatRoom,
+  getAllMessagesFromChatRoom
 };

@@ -1,7 +1,12 @@
-import { Router } from "express";
-import { roomController } from "./room.controller";
-import { authGuard } from "../../middleware/authGuard";
+import { Router } from 'express';
+import { roomController } from './room.controller';
+import { authGuard } from '../../middleware/authGuard';
 
 export const roomRouter = Router();
 
-roomRouter.delete('/:roomId',authGuard(),roomController.deleteChatRoom);
+roomRouter.delete('/:roomId', authGuard(), roomController.deleteChatRoom);
+roomRouter.get(
+  '/:roomId',
+  authGuard(),
+  roomController.getAllMessagesFromChatRoom,
+);
