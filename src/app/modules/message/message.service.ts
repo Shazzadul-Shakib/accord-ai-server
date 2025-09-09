@@ -1,4 +1,3 @@
-
 import { JwtPayload } from 'jsonwebtoken';
 import { MessageModel } from './message.model';
 import { sendMessageToRoom } from '../../utils/socketUtils';
@@ -8,12 +7,12 @@ import httpStatus from 'http-status';
 
 // ----- Send message to room service ----- //
 const sendMessageToRoomService = async (
-  body: { text: string },
+  body: { text: string; isTyping: boolean },
   params: { roomId: string },
   user: JwtPayload,
 ) => {
   const { roomId } = params;
-  const { text } = body;
+  const { text, isTyping } = body;
   const { userId } = user;
 
   // 1. Check if chat room exists
@@ -29,17 +28,23 @@ const sendMessageToRoomService = async (
       'You are not a member of this room',
     );
   }
+  // //   ----- send message realtime ----- //
+  // sendMessageToRoom(roomId, userId, text, isTyping);
+  // 🚨 If this is just typing event → do NOT save to DB
+  if (text === '' && typeof isTyping === 'boolean') {
+    sendMessageToRoom(roomId, userId, '', isTyping);
+    return { roomId, sender: userId, isTyping }; // return minimal
+  }
 
-  const newMessage = {
+  // Otherwise → it's a real message
+  const result = await MessageModel.create({
     roomId,
     sender: userId,
     text,
-  };
+    isTyping: false, // real message, not typing
+  });
 
-  const result = await MessageModel.create(newMessage);
-
-  //   ----- send message realtime ----- //
-  sendMessageToRoom(roomId, userId, text);
+  sendMessageToRoom(roomId, userId, text, false);
 
   return result;
 };

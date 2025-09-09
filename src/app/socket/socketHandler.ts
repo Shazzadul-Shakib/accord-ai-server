@@ -48,10 +48,10 @@ export const initializeSocket = (io: SocketServer) => {
     });
 
     // ----- Handle sending messages ----- //
-    socket.on('send_message', async ({ roomId, text }) => {
+    socket.on('send_message', async ({ roomId, text, isTyping }) => {
       try {
         await messageService.sendMessageToRoomService(
-          { text },
+          { text, isTyping },
           { roomId },
           { userId: socket.userId }, // user
         );
