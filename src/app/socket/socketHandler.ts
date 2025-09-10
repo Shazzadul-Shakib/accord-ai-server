@@ -4,8 +4,11 @@ import config from '../config';
 import { AuthenticatedSocket } from '../interface/socket.interface';
 import AppError from '../errorHandlers/appError';
 import httpStatus from 'http-status';
-import { userSockets } from '../utils/getSocketId';
+import {
+  userSockets,
+} from '../utils/getSocketId';
 import { messageService } from '../modules/message/message.service';
+import { broadcastUserOnlineStatus, sendOnlineUsersToUser } from '../utils/socketUtils';
 
 export const initializeSocket = (io: SocketServer) => {
   // ----- Authentication middleware ----- //
@@ -32,9 +35,21 @@ export const initializeSocket = (io: SocketServer) => {
   });
 
   io.on('connection', (socket: AuthenticatedSocket) => {
+    console.log(`🟢 User ${socket.userId} connected`);
+
     // ----- Store user socket mapping ----- //
     if (socket.userId) {
       userSockets.set(socket.userId.toString(), socket.id);
+
+      // ----- Broadcast user online status ----- //
+      broadcastUserOnlineStatus(socket.userId.toString(), true);
+
+      // ----- Send current online users list to the newly connected user ----- //
+      setTimeout(() => {
+        if (socket.userId) {
+          sendOnlineUsersToUser(socket.userId.toString());
+        }
+      }, 100); // Small delay to ensure connection is fully established
     }
 
     // ----- Join user to their personal room ----- //
@@ -70,12 +85,31 @@ export const initializeSocket = (io: SocketServer) => {
       console.log(`📤 User ${socket.userId} left room ${roomId}`);
     });
 
+    // ----- Handle ping to keep connection alive ----- //
+    socket.on('ping', () => {
+      socket.emit('pong');
+    });
+
     // ----- Handle disconnect ----- //
     socket.on('disconnect', () => {
       console.log(`🔴 User ${socket.userId} disconnected`);
       if (socket.userId) {
+        // ----- Clean up user socket mapping ----- //
         userSockets.delete(socket.userId.toString());
+
+        // ----- Broadcast user offline status ----- //
+        broadcastUserOnlineStatus(socket.userId.toString(), false);
       }
+    });
+
+    // ----- Handle manual disconnection ----- //
+    socket.on('user_disconnect', () => {
+      if (socket.userId) {
+        console.log(`🔴 User ${socket.userId} manually disconnected`);
+        userSockets.delete(socket.userId.toString());
+        broadcastUserOnlineStatus(socket.userId.toString(), false);
+      }
+      socket.disconnect(true);
     });
   });
 };
