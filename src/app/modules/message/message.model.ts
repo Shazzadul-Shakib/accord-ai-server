@@ -7,7 +7,7 @@ const messageSchema = new Schema<IMessage>(
     roomId: {
       type: Schema.Types.ObjectId,
       required: true,
-      ref: 'Room',
+      ref: 'ChatRoom',
     },
     sender: {
       type: Schema.Types.ObjectId,

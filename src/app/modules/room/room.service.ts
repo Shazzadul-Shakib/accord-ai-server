@@ -4,6 +4,8 @@ import { ChatRoomModel } from './room.model';
 import httpStatus from 'http-status';
 import { TopicRequestModel } from '../topic/topic.model';
 import { MessageModel } from '../message/message.model';
+import { IMessageSummary } from '../message/message.interface';
+import { generateChatSummary } from '../../gemini/gemini.config';
 
 // ----- delete chatroom service ----- //
 const deleteChatRoomService = async (
@@ -84,7 +86,49 @@ const getAllMessagesFromChatRoomService = async (
   return result;
 };
 
+// ----- generate chat summary service ----- //
+const generateChatSummaryService = async (
+  roomId: string,
+  userId: Types.ObjectId,
+) => {
+  // ----- check if room exists ----- //
+  const chatRoom = await ChatRoomModel.findById(roomId).populate({
+    path: 'topic',
+    select: 'topic',
+  });
+  if (!chatRoom) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Chat room not found');
+  }
+
+  const roomTopic = (chatRoom?.topic as { topic: string })?.topic || '';
+
+  // ----- check if the user is a member of the chat room ----- //
+  if (
+    !chatRoom.members.some(member => member.toString() === userId.toString())
+  ) {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      'User is not a member of the chat room',
+    );
+  }
+  const allMessages = await MessageModel.find({ roomId })
+    .populate({
+      path: 'sender',
+      select: 'name',
+    })
+    .lean<IMessageSummary[]>();
+
+  // Format chat messages for summarization
+  const formattedChat = allMessages
+    .map(msg => `${msg.sender.name}: ${msg.text}`)
+    .join('\n');
+  const result = await generateChatSummary(formattedChat, roomTopic);
+
+  return result;
+};
+
 export const chatRoomServices = {
   deleteChatRoomService,
   getAllMessagesFromChatRoomService,
+  generateChatSummaryService,
 };

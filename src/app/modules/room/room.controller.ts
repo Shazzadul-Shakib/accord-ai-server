@@ -27,12 +27,27 @@ const getAllMessagesFromChatRoom = catchAsync(async (req: Request, res: Response
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'Chat room deleted successfully',
+    message: 'Chat messages retrieved successfully',
+    data:result
+  });
+});
+
+// ----- summarize all messages from chatroom controller ----- //
+const summarizeAllMessagesFromChatRoom = catchAsync(async (req: Request, res: Response) => {
+  const { roomId } = req.params;
+  const { userId } = req.user;
+  const result = await chatRoomServices.generateChatSummaryService(roomId as string, userId as Types.ObjectId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Chat summary generated successfully',
     data:result
   });
 });
 
 export const roomController = {
   deleteChatRoom,
-  getAllMessagesFromChatRoom
+  getAllMessagesFromChatRoom,
+  summarizeAllMessagesFromChatRoom,
 };

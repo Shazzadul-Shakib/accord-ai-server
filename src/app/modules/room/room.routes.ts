@@ -10,3 +10,8 @@ roomRouter.get(
   authGuard(),
   roomController.getAllMessagesFromChatRoom,
 );
+roomRouter.get(
+  '/:roomId/summary',
+  authGuard(),
+  roomController.summarizeAllMessagesFromChatRoom,
+);
