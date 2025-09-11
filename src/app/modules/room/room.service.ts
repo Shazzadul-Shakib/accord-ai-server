@@ -118,11 +118,22 @@ const generateChatSummaryService = async (
     })
     .lean<IMessageSummary[]>();
 
-  // Format chat messages for summarization
+  // ----- format chat messages for summarization ----- //
   const formattedChat = allMessages
     .map(msg => `${msg.sender.name}: ${msg.text}`)
     .join('\n');
   const result = await generateChatSummary(formattedChat, roomTopic);
+
+  // ----- update chat room summary ----- //
+  await ChatRoomModel.findByIdAndUpdate(
+    roomId,
+    {
+      summary: result.summary,
+    },
+    {
+      new: true,
+    },
+  );
 
   return result;
 };
