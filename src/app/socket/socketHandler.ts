@@ -3,12 +3,13 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import config from '../config';
 import { AuthenticatedSocket } from '../interface/socket.interface';
 import AppError from '../errorHandlers/appError';
-import httpStatus from 'http-status';
-import {
-  userSockets,
-} from '../utils/getSocketId';
+import { status } from 'http-status';
+import { userSockets } from '../utils/getSocketId';
 import { messageService } from '../modules/message/message.service';
-import { broadcastUserOnlineStatus, sendOnlineUsersToUser } from '../utils/socketUtils';
+import {
+  broadcastUserOnlineStatus,
+  sendOnlineUsersToUser,
+} from '../utils/socketUtils';
 
 export const initializeSocket = (io: SocketServer) => {
   // ----- Authentication middleware ----- //
@@ -19,7 +20,7 @@ export const initializeSocket = (io: SocketServer) => {
         socket.handshake.headers.authorization?.split(' ')[1];
 
       if (!token) {
-        throw new AppError(httpStatus.UNAUTHORIZED, 'Authentication error');
+        throw new AppError(status.UNAUTHORIZED, 'Authentication error');
       }
 
       const decoded = jwt.verify(
@@ -30,7 +31,7 @@ export const initializeSocket = (io: SocketServer) => {
       socket.userId = decoded.userId;
       next();
     } catch {
-      throw new AppError(httpStatus.UNAUTHORIZED, 'Authentication error');
+      throw new AppError(status.UNAUTHORIZED, 'Authentication error');
     }
   });
 

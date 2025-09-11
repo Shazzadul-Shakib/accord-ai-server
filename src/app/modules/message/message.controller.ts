@@ -1,7 +1,7 @@
 import { catchAsync } from '../../utils/catchAsync';
 import { Request, Response } from 'express';
 import { sendResponse } from '../../utils/sendResponse';
-import httpStatus from 'http-status';
+import {status} from 'http-status';
 import { messageService } from './message.service';
 import { JwtPayload } from 'jsonwebtoken';
 
@@ -14,7 +14,7 @@ const sendMessageToRoom = catchAsync(async (req: Request, res: Response) => {
   );
 
   sendResponse(res, {
-    statusCode: httpStatus.OK,
+    statusCode: status.OK,
     success: true,
     message: 'Message sent successfully to the room',
     data: result,
@@ -33,7 +33,7 @@ const deleteMessageFromRoom = catchAsync(
     );
 
     sendResponse(res, {
-      statusCode: httpStatus.OK,
+      statusCode: status.OK,
       success: true,
       message: 'Message deleted successfully from the room',
     });
@@ -53,7 +53,7 @@ const updateMessageFromRoom = catchAsync(
     );
 
     sendResponse(res, {
-      statusCode: httpStatus.OK,
+      statusCode: status.OK,
       success: true,
       message: 'Message updated successfully from the room',
       data: result,

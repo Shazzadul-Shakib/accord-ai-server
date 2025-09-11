@@ -4,7 +4,7 @@ import { NotificationModel } from '../notification/notification.model';
 import { ChatRoomModel } from '../room/room.model';
 import { ITopicRequest, ITopicResponse } from './topic.interface';
 import { TopicRequestModel } from './topic.model';
-import httpStatus from 'http-status';
+import {status} from 'http-status';
 import { JwtPayload } from 'jsonwebtoken';
 
 // ----- create topic request service ----- //
@@ -14,7 +14,7 @@ const createTopicRequestService = async (data: ITopicRequest) => {
 
   if (uniqueMembers.length !== members.length) {
     throw new AppError(
-      httpStatus.BAD_REQUEST,
+      status.BAD_REQUEST,
       'Topic request members must be unique',
     );
   }
@@ -59,7 +59,7 @@ const createTopicRequestService = async (data: ITopicRequest) => {
       );
     } catch {
       throw new AppError(
-        httpStatus.INTERNAL_SERVER_ERROR,
+        status.INTERNAL_SERVER_ERROR,
         'Failed to send notifications',
       );
     }
@@ -76,7 +76,7 @@ const updateTopicRequestResponseService = async (
 ) => {
   const topicRequest = await TopicRequestModel.findById(topicRequestId);
   if (!topicRequest) {
-    throw new AppError(httpStatus.NOT_FOUND, 'Topic request not found');
+    throw new AppError(status.NOT_FOUND, 'Topic request not found');
   }
 
   const respondedUser = user.userId;
@@ -84,7 +84,7 @@ const updateTopicRequestResponseService = async (
   // ----- prevent creator from responding ----- //
   if (topicRequest.creator.toString() === respondedUser) {
     throw new AppError(
-      httpStatus.BAD_REQUEST,
+      status.BAD_REQUEST,
       'Creator cannot respond to their own topic request',
     );
   }
@@ -97,7 +97,7 @@ const updateTopicRequestResponseService = async (
   );
   if (!userResponse) {
     throw new AppError(
-      httpStatus.NOT_FOUND,
+      status.NOT_FOUND,
       'User response not found in topic request',
     );
   }
@@ -114,7 +114,7 @@ const updateTopicRequestResponseService = async (
 
   if (!updatedRequest) {
     throw new AppError(
-      httpStatus.INTERNAL_SERVER_ERROR,
+      status.INTERNAL_SERVER_ERROR,
       'Failed to update topic request',
     );
   }
@@ -152,7 +152,7 @@ const updateTopicRequestResponseService = async (
     } catch {
       await session.abortTransaction();
       throw new AppError(
-        httpStatus.INTERNAL_SERVER_ERROR,
+        status.INTERNAL_SERVER_ERROR,
         'Failed to activate topic request and create chat room',
       );
     } finally {
