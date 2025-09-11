@@ -1,7 +1,7 @@
 import { catchAsync } from '../../utils/catchAsync';
 import { Request, Response } from 'express';
 import { sendResponse } from '../../utils/sendResponse';
-import httpStatus from 'http-status';
+import {status} from 'http-status';
 import { chatRoomServices } from './room.service';
 import { Types } from 'mongoose';
 
@@ -12,7 +12,7 @@ const deleteChatRoom = catchAsync(async (req: Request, res: Response) => {
   await chatRoomServices.deleteChatRoomService(roomId as string, userId as Types.ObjectId);
 
   sendResponse(res, {
-    statusCode: httpStatus.OK,
+    statusCode: status.OK,
     success: true,
     message: 'Chat room deleted successfully',
   });
@@ -25,7 +25,7 @@ const getAllMessagesFromChatRoom = catchAsync(async (req: Request, res: Response
   const result = await chatRoomServices.getAllMessagesFromChatRoomService(roomId as string, userId as Types.ObjectId);
 
   sendResponse(res, {
-    statusCode: httpStatus.OK,
+    statusCode: status.OK,
     success: true,
     message: 'Chat messages retrieved successfully',
     data:result
@@ -39,7 +39,7 @@ const summarizeAllMessagesFromChatRoom = catchAsync(async (req: Request, res: Re
   const result = await chatRoomServices.generateChatSummaryService(roomId as string, userId as Types.ObjectId);
 
   sendResponse(res, {
-    statusCode: httpStatus.OK,
+    statusCode: status.OK,
     success: true,
     message: 'Chat summary generated successfully',
     data:result

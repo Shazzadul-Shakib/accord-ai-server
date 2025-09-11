@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 import AppError from '../../errorHandlers/appError';
 import { ChatRoomModel } from './room.model';
-import httpStatus from 'http-status';
+import {status} from 'http-status';
 import { TopicRequestModel } from '../topic/topic.model';
 import { MessageModel } from '../message/message.model';
 import { IMessageSummary } from '../message/message.interface';
@@ -15,13 +15,13 @@ const deleteChatRoomService = async (
   // ----- check if the user is a member of the chat room ----- //
   const chatRoom = await ChatRoomModel.findById(roomId);
   if (!chatRoom) {
-    throw new AppError(httpStatus.NOT_FOUND, 'Chat room not found');
+    throw new AppError(status.NOT_FOUND, 'Chat room not found');
   }
   if (
     !chatRoom.members.some(member => member.toString() === userId.toString())
   ) {
     throw new AppError(
-      httpStatus.FORBIDDEN,
+      status.FORBIDDEN,
       'User is not a member of the chat room',
     );
   }
@@ -62,7 +62,7 @@ const getAllMessagesFromChatRoomService = async (
   // ----- check if room exists ----- //
   const chatRoom = await ChatRoomModel.findById(roomId);
   if (!chatRoom) {
-    throw new AppError(httpStatus.NOT_FOUND, 'Chat room not found');
+    throw new AppError(status.NOT_FOUND, 'Chat room not found');
   }
 
   // ----- check if the user is a member of the chat room ----- //
@@ -70,7 +70,7 @@ const getAllMessagesFromChatRoomService = async (
     !chatRoom.members.some(member => member.toString() === userId.toString())
   ) {
     throw new AppError(
-      httpStatus.FORBIDDEN,
+      status.FORBIDDEN,
       'User is not a member of the chat room',
     );
   }
@@ -97,7 +97,7 @@ const generateChatSummaryService = async (
     select: 'topic',
   });
   if (!chatRoom) {
-    throw new AppError(httpStatus.NOT_FOUND, 'Chat room not found');
+    throw new AppError(status.NOT_FOUND, 'Chat room not found');
   }
 
   const roomTopic = (chatRoom?.topic as { topic: string })?.topic || '';
@@ -107,7 +107,7 @@ const generateChatSummaryService = async (
     !chatRoom.members.some(member => member.toString() === userId.toString())
   ) {
     throw new AppError(
-      httpStatus.FORBIDDEN,
+      status.FORBIDDEN,
       'User is not a member of the chat room',
     );
   }

@@ -1,7 +1,7 @@
 import { catchAsync } from '../../utils/catchAsync';
 import { Request, Response } from 'express';
 import { sendResponse } from '../../utils/sendResponse';
-import httpStatus from 'http-status';
+import {status} from 'http-status';
 import { topicServices } from './topic.service';
 import { JwtPayload } from 'jsonwebtoken';
 
@@ -10,7 +10,7 @@ const createTopicRequest = catchAsync(async (req: Request, res: Response) => {
   const result = await topicServices.createTopicRequestService(req.body);
 
   sendResponse(res, {
-    statusCode: httpStatus.OK,
+    statusCode: status.OK,
     success: true,
     message: 'Topic request created successfully',
     data: result,
@@ -27,7 +27,7 @@ const updateTopicRequestResponse = catchAsync(
     );
 
     sendResponse(res, {
-      statusCode: httpStatus.OK,
+      statusCode: status.OK,
       success: true,
       message: 'Topic request response updated successfully',
       data: result,

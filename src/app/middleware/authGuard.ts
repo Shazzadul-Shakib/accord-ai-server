@@ -3,14 +3,14 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import config from '../config';
 import { catchAsync } from '../utils/catchAsync';
 import AppError from '../errorHandlers/appError';
-import httpStatus from 'http-status';
+import {status} from 'http-status';
 import { UserModel } from '../modules/user/user.model';
 
 export const authGuard = () => {
   return catchAsync(async (req: Request, _res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new AppError(httpStatus.UNAUTHORIZED, 'Unauthorized access!');
+      throw new AppError(status.UNAUTHORIZED, 'Unauthorized access!');
     }
 
     // ----- extract the token from Bearer ----- //
@@ -18,7 +18,7 @@ export const authGuard = () => {
 
     // ----- if token is not sent ----- //
     if (!token) {
-      throw new AppError(httpStatus.UNAUTHORIZED, 'Unauthorized access!');
+      throw new AppError(status.UNAUTHORIZED, 'Unauthorized access!');
     }
 
     // ----- Verify the JWT token ----- //
@@ -29,7 +29,7 @@ export const authGuard = () => {
         config.jwt_access_secret as string,
       ) as JwtPayload;
     } catch {
-      throw new AppError(httpStatus.UNAUTHORIZED, 'Invalid or expired token!');
+      throw new AppError(status.UNAUTHORIZED, 'Invalid or expired token!');
     }
 
     const { email } = decoded;
@@ -37,7 +37,7 @@ export const authGuard = () => {
     // ----- check existance of user ----- //
     const user = await UserModel.isUserExistByEmail(email);
     if (!user) {
-      throw new AppError(httpStatus.NOT_FOUND, 'User not found');
+      throw new AppError(status.NOT_FOUND, 'User not found');
     }
 
     req.user = decoded as JwtPayload;

@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import config from '../config';
 import AppError from '../errorHandlers/appError';
-import httpStatus from 'http-status';
+import {status} from 'http-status';
 import { extractJsonFromMarkdown } from '../utils/extractJsonUtils';
 import { SummaryResponse } from '../interface/summary.interface';
 
@@ -89,7 +89,7 @@ export async function generateChatSummary(
   } catch (error) {
     console.error('Error generating chat summary:', error);
     throw new AppError(
-      httpStatus.INTERNAL_SERVER_ERROR,
+      status.INTERNAL_SERVER_ERROR,
       'Failed to generate chat summary',
     );
   }
