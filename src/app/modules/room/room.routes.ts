@@ -6,7 +6,7 @@ export const roomRouter = Router();
 
 roomRouter.delete('/:roomId', authGuard(), roomController.deleteChatRoom);
 roomRouter.get(
-  '/:roomId',
+  '/:roomId/messages',
   authGuard(),
   roomController.getAllMessagesFromChatRoom,
 );

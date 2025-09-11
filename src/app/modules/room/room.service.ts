@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 import AppError from '../../errorHandlers/appError';
 import { ChatRoomModel } from './room.model';
-import {status} from 'http-status';
+import { status } from 'http-status';
 import { TopicRequestModel } from '../topic/topic.model';
 import { MessageModel } from '../message/message.model';
 import { IMessageSummary } from '../message/message.interface';
@@ -56,8 +56,10 @@ const deleteChatRoomService = async (
 
 // ----- get all messages from chatroom service ----- //
 const getAllMessagesFromChatRoomService = async (
-  roomId: string,
+  roomId: Types.ObjectId,
   userId: Types.ObjectId,
+  cursor?: string,
+  limit: number = 20,
 ) => {
   // ----- check if room exists ----- //
   const chatRoom = await ChatRoomModel.findById(roomId);
@@ -65,25 +67,35 @@ const getAllMessagesFromChatRoomService = async (
     throw new AppError(status.NOT_FOUND, 'Chat room not found');
   }
 
-  // ----- check if the user is a member of the chat room ----- //
-  if (
-    !chatRoom.members.some(member => member.toString() === userId.toString())
-  ) {
+  // ----- check if user is a member ----- //
+  if (!chatRoom.members.some(m => m.toString() === userId.toString())) {
     throw new AppError(
       status.FORBIDDEN,
       'User is not a member of the chat room',
     );
   }
 
-  const result = await MessageModel.find({ roomId })
+  // ----- Build query ----- //
+  const query: { roomId: Types.ObjectId; createdAt?: { $lt: Date } } = {
+    roomId,
+  };
+
+  if (cursor && !isNaN(Date.parse(cursor))) {
+    query.createdAt = { $lt: new Date(cursor) };
+  }
+
+  // ----- Fetch messages in ascending order ----- //
+  const messages = await MessageModel.find(query)
+    .sort({ createdAt: -1 }) // oldest → newest
+    .limit(limit)
     .populate({
       path: 'sender',
       model: 'User',
       select: '_id name',
     })
-    .limit(20);
+    .lean();
 
-  return result;
+  return messages;
 };
 
 // ----- generate chat summary service ----- //
