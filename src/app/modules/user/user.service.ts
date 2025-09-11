@@ -67,7 +67,9 @@ const getAllUsers = async (userId: Types.ObjectId) => {
     throw new AppError(status.NOT_FOUND, 'User not found!');
   }
   // ----- get all users except requested user ----- //
-  const result = await UserModel.find({ _id: { $ne: userId } }).select('name _id');
+  const result = await UserModel.find({ _id: { $ne: userId } }).select(
+    'name _id',
+  );
 
   return result;
 };
@@ -99,9 +101,31 @@ const refreshToken = async (refreshToken: string) => {
   return { accessToken };
 };
 
+// ----- user profile update service ----- //
+const updateProfileService = async (data: Partial<IUser>, user: JwtPayload) => {
+  const { userId } = user;
+  // ----- check if user exist by id ----- //
+  const isUserExist = await UserModel.findById(userId);
+  if (!isUserExist) {
+    throw new AppError(status.NOT_FOUND, 'User not found!');
+  }
+
+  const result = await UserModel.findByIdAndUpdate(
+    userId,
+    {
+      ...data,
+    },
+    {
+      new: true,
+    },
+  );
+  return result;
+};
+
 export const userService = {
   registerUser,
   loginUser,
   getAllUsers,
   refreshToken,
+  updateProfileService,
 };

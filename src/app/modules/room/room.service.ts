@@ -122,13 +122,13 @@ const generateChatSummaryService = async (
   const formattedChat = allMessages
     .map(msg => `${msg.sender.name}: ${msg.text}`)
     .join('\n');
-  const result = await generateChatSummary(formattedChat, roomTopic);
+  const chatSummary = await generateChatSummary(formattedChat, roomTopic);
 
   // ----- update chat room summary ----- //
-  await ChatRoomModel.findByIdAndUpdate(
+  const result = await ChatRoomModel.findByIdAndUpdate(
     roomId,
     {
-      summary: result.summary,
+      summary: chatSummary.summary,
     },
     {
       new: true,

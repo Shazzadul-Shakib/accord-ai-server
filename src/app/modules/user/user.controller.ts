@@ -44,7 +44,7 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
 
 // ----- user refresh token controller ----- //
 const getAllUsers = catchAsync(async (req: Request, res: Response) => {
-  const {userId}=req.user;
+  const { userId } = req.user;
   const result = await userService.getAllUsers(userId);
 
   sendResponse(res, {
@@ -73,9 +73,22 @@ const refreshToken = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// ----- update user profile controller ----- //
+const updateProfile = catchAsync(async (req: Request, res: Response) => {
+  const result = await userService.updateProfileService(req.body,req.user);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: 'Updated Profile successfully',
+    data: result,
+  });
+});
+
 export const userController = {
   registerUser,
   loginUser,
   getAllUsers,
   refreshToken,
+  updateProfile,
 };

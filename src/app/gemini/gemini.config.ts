@@ -5,12 +5,15 @@ import httpStatus from 'http-status';
 import { extractJsonFromMarkdown } from '../utils/extractJsonUtils';
 import { SummaryResponse } from '../interface/summary.interface';
 
-// Initialize Gemini AI
+// ----- Initialize Gemini AI----- //
 const genAI = new GoogleGenerativeAI(config.gemini_api_key as string);
 
-// Function to generate chat summary
-export async function generateChatSummary(formattedChat: string, topic: string) {
-  // Create prompt for summarization
+// ----- Generate chat summary ----- //
+export async function generateChatSummary(
+  formattedChat: string,
+  topic: string,
+) {
+  // ----- Create prompt for summarization ----- //
   const prompt = `
   Please provide a concise summary of the following chat conversation${topic ? ` about "${topic}"` : ''}:
   
@@ -46,7 +49,7 @@ export async function generateChatSummary(formattedChat: string, topic: string) 
   - Return ONLY the JSON object, no additional text or markdown
   `;
 
-  // Get Gemini model
+  // ----- Get Gemini model ----- //
   const model = genAI.getGenerativeModel({
     model: 'gemini-1.5-flash',
     generationConfig: {
@@ -57,25 +60,23 @@ export async function generateChatSummary(formattedChat: string, topic: string) 
   });
 
   try {
-    // Generate summary
+    // ----- Generate summary ----- //
     const result = await model.generateContent(prompt);
     const responseText = result.response.text();
 
-    console.log('Raw Gemini Response:', responseText);
-
-    // Extract and parse JSON
+    // ----- Extract and parse JSON ----- //
     let jsonString: string;
     try {
       jsonString = extractJsonFromMarkdown(responseText);
     } catch {
-      // If extraction fails, try parsing the entire response
+      // ----- If extraction fails, try parsing the entire response ----- //
       jsonString = responseText.trim();
     }
 
-    // Parse JSON
+    // ----- Parse JSON ----- //
     const summaryData: SummaryResponse = JSON.parse(jsonString);
 
-    // Validate the structure
+    // ----- Validate the structure ----- //
     if (
       !summaryData.summary ||
       !summaryData.summary.title ||
@@ -83,7 +84,7 @@ export async function generateChatSummary(formattedChat: string, topic: string) 
     ) {
       throw new Error('Invalid summary structure received from AI');
     }
-    
+
     return summaryData;
   } catch (error) {
     console.error('Error generating chat summary:', error);

@@ -22,3 +22,9 @@ userRouter.post(
   validateRequest({ cookies: UserValidations.refreshTokenValidationSchema }),
   userController.refreshToken,
 );
+userRouter.patch(
+  '/update-profile',
+  authGuard(),
+  validateRequest({ body: UserValidations.updateUserProfileValidationSchema }),
+  userController.updateProfile,
+);
