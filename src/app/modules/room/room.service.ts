@@ -6,6 +6,7 @@ import { TopicRequestModel } from '../topic/topic.model';
 import { MessageModel } from '../message/message.model';
 import { IMessageSummary } from '../message/message.interface';
 import { generateChatSummary } from '../../gemini/gemini.config';
+import { UserModel } from '../user/user.model';
 
 // ----- delete chatroom service ----- //
 const deleteChatRoomService = async (
@@ -52,6 +53,46 @@ const deleteChatRoomService = async (
     await session.endSession();
   }
   return result;
+};
+
+// ----- get all messages from chatroom service ----- //
+const getAllUserChatRoomService = async (
+  userId: Types.ObjectId,
+  cursor?: string,
+  limit: number = 20,
+) => {
+  // ----- check if user exist ----- //
+  const user = await UserModel.findById(userId);
+  if (!user) {
+    throw new AppError(status.NOT_FOUND, "User doesn't exist!");
+  }
+
+  // Build query for pagination
+  const query: {
+    members: { $in: Types.ObjectId[] };
+    updatedAt?: { $lt: Date };
+  } = {
+    members: { $in: [userId] },
+  };
+
+  if (cursor && !isNaN(Date.parse(cursor))) {
+    query.updatedAt = { $lt: new Date(cursor) };
+  }
+
+  const chatRooms = await ChatRoomModel.find(query, 'topic members')
+    .populate({
+      path: 'topic',
+      select: 'topic',
+    })
+    .populate({
+      path: 'members',
+      select: 'name image',
+    })
+    .sort({ updatedAt: -1 })
+    .limit(limit)
+    .lean();
+
+  return chatRooms;
 };
 
 // ----- get all messages from chatroom service ----- //
@@ -154,4 +195,5 @@ export const chatRoomServices = {
   deleteChatRoomService,
   getAllMessagesFromChatRoomService,
   generateChatSummaryService,
+  getAllUserChatRoomService,
 };

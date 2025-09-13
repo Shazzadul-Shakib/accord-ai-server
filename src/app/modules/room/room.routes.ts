@@ -4,6 +4,7 @@ import { authGuard } from '../../middleware/authGuard';
 
 export const roomRouter = Router();
 
+roomRouter.get('/', authGuard(), roomController.getAllUserChatRoom);
 roomRouter.delete('/:roomId', authGuard(), roomController.deleteChatRoom);
 roomRouter.get(
   '/:roomId/messages',
