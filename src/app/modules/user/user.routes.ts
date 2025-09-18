@@ -16,7 +16,9 @@ userRouter.post(
   validateRequest({ body: UserValidations.userLoginValidatinSchema }),
   userController.loginUser,
 );
+userRouter.post('/logout', userController.logoutUser);
 userRouter.get('/', authGuard(), userController.getAllUsers);
+userRouter.get('/logged-user', authGuard(), userController.getLoggedUser);
 userRouter.post(
   '/refresh-token',
   validateRequest({ cookies: UserValidations.refreshTokenValidationSchema }),

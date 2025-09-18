@@ -59,7 +59,7 @@ const loginUser = async (user: IUser) => {
   return { accessToken, refreshToken };
 };
 
-// ----- user login service ----- //
+// ----- get all users service ----- //
 const getAllUsers = async (userId: Types.ObjectId) => {
   // ----- check if user exist by id ----- //
   const isUserExist = await UserModel.findById(userId);
@@ -69,6 +69,21 @@ const getAllUsers = async (userId: Types.ObjectId) => {
   // ----- get all users except requested user ----- //
   const result = await UserModel.find({ _id: { $ne: userId } }).select(
     'name _id',
+  );
+
+  return result;
+};
+
+// ----- get logged user service ----- //
+const getLoggedUser = async (userId: Types.ObjectId) => {
+  // ----- check if user exist by id ----- //
+  const isUserExist = await UserModel.findById(userId);
+  if (!isUserExist) {
+    throw new AppError(status.NOT_FOUND, 'User not found!');
+  }
+  // ----- get all users except requested user ----- //
+  const result = await UserModel.findById(userId).select(
+    'name _id email image',
   );
 
   return result;
@@ -128,4 +143,5 @@ export const userService = {
   getAllUsers,
   refreshToken,
   updateProfileService,
+  getLoggedUser,
 };

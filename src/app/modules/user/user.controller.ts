@@ -42,7 +42,7 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// ----- user refresh token controller ----- //
+// ----- get all users controller ----- //
 const getAllUsers = catchAsync(async (req: Request, res: Response) => {
   const { userId } = req.user;
   const result = await userService.getAllUsers(userId);
@@ -50,7 +50,7 @@ const getAllUsers = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: status.OK,
     success: true,
-    message: 'All users retried successfully',
+    message: 'All users retrived successfully',
     data: result,
   });
 });
@@ -85,10 +85,38 @@ const updateProfile = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// ----- logout user controller ----- //
+const logoutUser = catchAsync(async (req: Request, res: Response) => {
+  // Clear access and refresh token cookies
+  res.clearCookie('accessToken');
+  res.clearCookie('refreshToken');
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: 'Logged out successfully',
+  });
+});
+
+// ----- user refresh token controller ----- //
+const getLoggedUser = catchAsync(async (req: Request, res: Response) => {
+  const { userId } = req.user;
+  const result = await userService.getLoggedUser(userId);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: 'User retrived successfully',
+    data: result,
+  });
+});
+
 export const userController = {
   registerUser,
   loginUser,
   getAllUsers,
   refreshToken,
   updateProfile,
+  logoutUser,
+  getLoggedUser,
 };
