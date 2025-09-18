@@ -38,7 +38,7 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: status.OK,
     success: true,
-    message: 'User logged in successfully',
+    message: 'Logged in successfully',
   });
 });
 
@@ -75,7 +75,7 @@ const refreshToken = catchAsync(async (req: Request, res: Response) => {
 
 // ----- update user profile controller ----- //
 const updateProfile = catchAsync(async (req: Request, res: Response) => {
-  const result = await userService.updateProfileService(req.body,req.user);
+  const result = await userService.updateProfileService(req.body, req.user);
 
   sendResponse(res, {
     statusCode: status.OK,
