@@ -86,19 +86,23 @@ const updateTopicRequestResponseService = async (
     throw new AppError(status.NOT_FOUND, 'Topic request not found');
   }
 
-  const respondedUser = new Types.ObjectId(user.userId);
+  const respondedUser = user.userId;
+  console.log({respondedUser})
 
-  if (topicRequest.creator.equals(respondedUser)) {
+  // ----- prevent creator from responding ----- //
+  if (topicRequest.creator === respondedUser) {
     throw new AppError(
       status.BAD_REQUEST,
       'Creator cannot respond to their own topic request',
     );
   }
 
-  const userResponse = topicRequest.responses.find(resp =>
-    resp.user.equals(respondedUser),
-  );
+  const userStatus = data.status;
 
+  // ----- check if the user already exists in responses ----- //
+  const userResponse = topicRequest.responses.find(
+    response => response.user.toHexString() === respondedUser,
+  );
   if (!userResponse) {
     throw new AppError(
       status.NOT_FOUND,
@@ -106,10 +110,10 @@ const updateTopicRequestResponseService = async (
     );
   }
 
-  // Update user's response
+  // ----- update the user's response ----- //
   const updatedRequest = await TopicRequestModel.findByIdAndUpdate(
     topicRequestId,
-    { $set: { 'responses.$[elem].status': data.status } },
+    { $set: { 'responses.$[elem].status': userStatus } },
     {
       arrayFilters: [{ 'elem.user': respondedUser }],
       new: true,
@@ -123,13 +127,17 @@ const updateTopicRequestResponseService = async (
     );
   }
 
+  // ----- check if the request should now be "active" ----- //
   const atLeastOneAccepted = updatedRequest.responses.some(
     resp => resp.status === 'accepted',
   );
+
+  // ----- check no one accepted ----- //
   const noOneAccepted = updatedRequest.responses.every(
     resp => resp.status !== 'accepted',
   );
 
+  // ----- topic request becomes active with whoever accepted ----- //
   if (atLeastOneAccepted && updatedRequest.status === 'pending') {
     const session = await TopicRequestModel.startSession();
     try {
@@ -142,8 +150,7 @@ const updateTopicRequestResponseService = async (
         [
           {
             topic: updatedRequest._id,
-            creator: updatedRequest.creator,
-            members: [...updatedRequest.members],
+            members: [...updatedRequest.members, updatedRequest.creator],
           },
         ],
         { session },
@@ -160,7 +167,7 @@ const updateTopicRequestResponseService = async (
       session.endSession();
     }
   }
-
+  // ----- topic request expires if no one accepted ----- //
   if (noOneAccepted && updatedRequest.status === 'pending') {
     updatedRequest.status = 'expired';
     await updatedRequest.save();

@@ -1,6 +1,9 @@
 import { JwtPayload } from 'jsonwebtoken';
 import { INotification } from './notification.interface';
 import { NotificationModel } from './notification.model';
+import { getRelativeTime } from '../../utils/getFornmattedTimestamp';
+import AppError from '../../errorHandlers/appError';
+import status from 'http-status';
 
 // ----- create notification service ------ //
 const createNotificationService = async (payload: INotification) => {
@@ -20,7 +23,8 @@ const getUserNotificationsService = async (user: JwtPayload) => {
   // Transform notifications into required format
   const formattedNotifications = notifications.map(notification => {
     return {
-      id: notification._id,
+      id: notification?._id,
+      topicId: notification?.topicId?._id,
       title: `New Notification from ${notification?.senderId?.name}`,
       description: `" ${notification?.senderId?.name}" has invited you to a topic room for discussing about " ${notification?.topicId?.topic}"`,
       time: getRelativeTime(notification.createdAt),
@@ -30,22 +34,31 @@ const getUserNotificationsService = async (user: JwtPayload) => {
   return formattedNotifications;
 };
 
-// Helper function to convert timestamp to relative time
-const getRelativeTime = (timestamp: Date): string => {
-  const now = new Date();
-  const diff = now.getTime() - timestamp.getTime();
-  const minutes = Math.floor(diff / 60000);
+// ----- delete notification service ----- //
+const deleteNotificationService = async (
+  user: JwtPayload,
+  notificationId: string,
+) => {
+  const { userId } = user;
 
-  if (minutes < 60) {
-    return `${minutes} min ago`;
-  } else if (minutes < 1440) {
-    return `${Math.floor(minutes / 60)} hours ago`;
-  } else {
-    return `${Math.floor(minutes / 1440)} days ago`;
+  //----- find user is the recipient of the notification ----- //
+  const isUserRecipient = await NotificationModel.findOne({
+    recipientId: userId,
+  });
+  if (!isUserRecipient) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      'You can not delete this notification',
+    );
   }
+
+  const result = await NotificationModel.findByIdAndDelete(notificationId);
+
+  return result;
 };
 
 export const notificationServices = {
   createNotificationService,
   getUserNotificationsService,
+  deleteNotificationService,
 };

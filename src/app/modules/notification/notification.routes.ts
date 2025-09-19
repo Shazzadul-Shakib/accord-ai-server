@@ -19,3 +19,9 @@ notificationRouter.get(
   authGuard(),
   notificationController.getUserNotifications,
 );
+
+notificationRouter.delete(
+  '/:notificationId',
+  authGuard(),
+  notificationController.deleteNotification,
+);
