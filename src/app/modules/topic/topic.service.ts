@@ -87,7 +87,6 @@ const updateTopicRequestResponseService = async (
   }
 
   const respondedUser = user.userId;
-  console.log({respondedUser})
 
   // ----- prevent creator from responding ----- //
   if (topicRequest.creator === respondedUser) {
