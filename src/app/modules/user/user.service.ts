@@ -68,7 +68,7 @@ const getAllUsers = async (userId: Types.ObjectId) => {
   }
   // ----- get all users except requested user ----- //
   const result = await UserModel.find({ _id: { $ne: userId } }).select(
-    'name _id',
+    'name _id image',
   );
 
   return result;

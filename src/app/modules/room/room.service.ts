@@ -55,7 +55,7 @@ const deleteChatRoomService = async (
   return result;
 };
 
-// ----- get all messages from chatroom service ----- //
+// ----- get all users chatroom service ----- //
 const getAllUserChatRoomService = async (
   userId: Types.ObjectId,
   cursor?: string,
@@ -152,7 +152,7 @@ const getAllMessagesFromChatRoomService = async (
     })
     .lean();
 
-  return messages;
+  return messages.reverse();
 };
 
 // ----- generate chat summary service ----- //
