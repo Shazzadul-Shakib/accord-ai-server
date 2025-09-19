@@ -79,7 +79,7 @@ const getAllUserChatRoomService = async (
     query.updatedAt = { $lt: new Date(cursor) };
   }
 
-  const chatRooms = await ChatRoomModel.find(query, 'topic members')
+  const chatRooms = await ChatRoomModel.find(query)
     .populate({
       path: 'topic',
       select: 'topic',
@@ -92,7 +92,23 @@ const getAllUserChatRoomService = async (
     .limit(limit)
     .lean();
 
-  return chatRooms;
+  // Get last message for each chat room
+  const roomsWithLastMessage = await Promise.all(
+    chatRooms.map(async room => {
+      const lastMessage = await MessageModel.findOne({ roomId: room._id })
+        .sort({ createdAt: -1 })
+        .lean();
+
+      return {
+        roomId: room?._id,
+        topicTitle: (room?.topic as { topic: string })?.topic,
+        lastMessage: lastMessage?.text,
+        lastMessageTime: lastMessage?.createdAt,
+      };
+    }),
+  );
+
+  return roomsWithLastMessage;
 };
 
 // ----- get all messages from chatroom service ----- //
