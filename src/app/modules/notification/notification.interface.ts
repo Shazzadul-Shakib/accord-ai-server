@@ -1,13 +1,23 @@
 import { Types } from 'mongoose';
-import { NotificationData } from '../../interface/notification.interface';
+
+export interface ISender {
+  _id: Types.ObjectId;
+  name: string;
+  email: string;
+}
+
+export interface ITopic {
+  _id: Types.ObjectId;
+  topic: string;
+  status: string;
+}
 
 export interface INotification {
-  _id?: Types.ObjectId;
+  _id: Types.ObjectId;
   recipientId: Types.ObjectId;
-  senderId?: Types.ObjectId;
-  data?: NotificationData;
-  topicId: Types.ObjectId;
-  isRead?: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
+  senderId: ISender;
+  topicId: ITopic;
+  isRead: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }

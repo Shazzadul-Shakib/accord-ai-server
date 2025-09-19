@@ -1,16 +1,26 @@
+import { Types } from 'mongoose';
 import AppError from '../../errorHandlers/appError';
 import { sendNotificationToUsers } from '../../utils/socketUtils';
 import { NotificationModel } from '../notification/notification.model';
 import { ChatRoomModel } from '../room/room.model';
 import { ITopicRequest, ITopicResponse } from './topic.interface';
 import { TopicRequestModel } from './topic.model';
-import {status} from 'http-status';
+import { status } from 'http-status';
 import { JwtPayload } from 'jsonwebtoken';
 
 // ----- create topic request service ----- //
-const createTopicRequestService = async (data: ITopicRequest) => {
-  const { members, topic, creator } = data;
-  const uniqueMembers = [...new Set(members.map(String))];
+const createTopicRequestService = async (
+  data: Omit<
+    ITopicRequest,
+    'creator' | 'responses' | 'status' | 'createdAt' | 'updatedAt'
+  >,
+  user: JwtPayload,
+) => {
+  const { members, topic } = data;
+  const creatorId = new Types.ObjectId(user.userId); // take creator from JWT
+  const uniqueMembers = [...new Set(members.map(String))].map(
+    id => new Types.ObjectId(id),
+  );
 
   if (uniqueMembers.length !== members.length) {
     throw new AppError(
@@ -20,39 +30,36 @@ const createTopicRequestService = async (data: ITopicRequest) => {
   }
 
   const result = await TopicRequestModel.create({
-    ...data,
+    creator: creatorId,
+    topic,
     members: uniqueMembers,
     responses: uniqueMembers.map(u => ({ user: u })),
   });
 
-  // ----- Send real-time notifications to all members ----- //
+  // ----- Send real-time notifications to all members except creator ----- //
   const notificationData = {
     type: 'topic_request' as const,
     title: topic,
     message: `You've been invited to participate in "${topic}"`,
-    data: {
-      topicRequestId: result._id,
-      topic,
-      creator,
-    },
-    createdAt: new Date(),
+    creator: creatorId,
+    data: { topicRequestId: result._id, topic },
+    createdAt: result.createdAt,
   };
 
-  // ----- Filter out the creator from notification recipients ----- //
-  const notificationRecipients = uniqueMembers.filter(memberId => {
-    const creatorString = creator.toString();
-    const memberString = memberId.toString();
-    return memberString !== creatorString;
-  });
+  const notificationRecipients = uniqueMembers.filter(
+    memberId => !memberId.equals(creatorId),
+  );
 
   if (notificationRecipients.length > 0) {
     try {
-      sendNotificationToUsers(notificationRecipients, notificationData);
-      // ----- Store notifications in DB ----- //
+      sendNotificationToUsers(
+        notificationRecipients.map(String),
+        notificationData,
+      );
       await NotificationModel.create(
         notificationRecipients.map(recipient => ({
           recipientId: recipient,
-          senderId: creator,
+          senderId: creatorId,
           isRead: false,
           topicId: result._id,
         })),
@@ -79,22 +86,19 @@ const updateTopicRequestResponseService = async (
     throw new AppError(status.NOT_FOUND, 'Topic request not found');
   }
 
-  const respondedUser = user.userId;
+  const respondedUser = new Types.ObjectId(user.userId);
 
-  // ----- prevent creator from responding ----- //
-  if (topicRequest.creator.toString() === respondedUser) {
+  if (topicRequest.creator.equals(respondedUser)) {
     throw new AppError(
       status.BAD_REQUEST,
       'Creator cannot respond to their own topic request',
     );
   }
 
-  const userStatus = data.status;
-
-  // ----- check if the user already exists in responses ----- //
-  const userResponse = topicRequest.responses.find(
-    response => response.user.toString() === respondedUser,
+  const userResponse = topicRequest.responses.find(resp =>
+    resp.user.equals(respondedUser),
   );
+
   if (!userResponse) {
     throw new AppError(
       status.NOT_FOUND,
@@ -102,10 +106,10 @@ const updateTopicRequestResponseService = async (
     );
   }
 
-  // ----- update the user's response ----- //
+  // Update user's response
   const updatedRequest = await TopicRequestModel.findByIdAndUpdate(
     topicRequestId,
-    { $set: { 'responses.$[elem].status': userStatus } },
+    { $set: { 'responses.$[elem].status': data.status } },
     {
       arrayFilters: [{ 'elem.user': respondedUser }],
       new: true,
@@ -119,17 +123,13 @@ const updateTopicRequestResponseService = async (
     );
   }
 
-  // ----- check if the request should now be "active" ----- //
   const atLeastOneAccepted = updatedRequest.responses.some(
     resp => resp.status === 'accepted',
   );
-
-  // ----- check no one accepted ----- //
   const noOneAccepted = updatedRequest.responses.every(
     resp => resp.status !== 'accepted',
   );
 
-  // ----- topic request becomes active with whoever accepted ----- //
   if (atLeastOneAccepted && updatedRequest.status === 'pending') {
     const session = await TopicRequestModel.startSession();
     try {
@@ -142,7 +142,8 @@ const updateTopicRequestResponseService = async (
         [
           {
             topic: updatedRequest._id,
-            members: [...updatedRequest.members, updatedRequest.creator],
+            creator: updatedRequest.creator,
+            members: [...updatedRequest.members],
           },
         ],
         { session },
@@ -159,7 +160,7 @@ const updateTopicRequestResponseService = async (
       session.endSession();
     }
   }
-  // ----- topic request expires if no one accepted ----- //
+
   if (noOneAccepted && updatedRequest.status === 'pending') {
     updatedRequest.status = 'expired';
     await updatedRequest.save();

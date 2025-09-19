@@ -7,7 +7,6 @@ const topicRequestSchema = new Schema(
     creator: {
       type: Types.ObjectId,
       ref: 'User',
-      required: true,
       index: true,
     },
     topic: { type: String, required: true, index: true },

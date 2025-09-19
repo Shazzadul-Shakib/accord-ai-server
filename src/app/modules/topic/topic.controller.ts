@@ -7,7 +7,10 @@ import { JwtPayload } from 'jsonwebtoken';
 
 // ----- create topic request controller ----- //
 const createTopicRequest = catchAsync(async (req: Request, res: Response) => {
-  const result = await topicServices.createTopicRequestService(req.body);
+  const result = await topicServices.createTopicRequestService(
+    req.body,
+    req.user as JwtPayload,
+  );
 
   sendResponse(res, {
     statusCode: status.OK,
