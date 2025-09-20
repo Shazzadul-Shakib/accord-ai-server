@@ -18,8 +18,9 @@ async function main() {
     // Initialize Socket.IO
     io = new SocketServer(server, {
       cors: {
-        origin: ['http://127.0.0.1:5500', 'http://127.0.0.1:5501'],
+        origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
         methods: ['GET', 'POST'],
+        credentials: true,
       },
     });
 
