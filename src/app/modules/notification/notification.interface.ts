@@ -17,7 +17,7 @@ export interface INotification {
   recipientId: Types.ObjectId;
   senderId: ISender;
   topicId: ITopic;
-  isRead: boolean;
+  hasResponse: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

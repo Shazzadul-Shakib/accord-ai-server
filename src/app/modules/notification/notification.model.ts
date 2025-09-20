@@ -18,7 +18,7 @@ const notificationSchema = new Schema<INotification>(
       ref: 'TopicRequest',
       required: true,
     },
-    isRead: {
+    hasResponse: {
       type: Boolean,
       default: false,
       index: true,

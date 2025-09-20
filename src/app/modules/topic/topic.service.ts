@@ -77,7 +77,7 @@ const createTopicRequestService = async (
 
 // ----- update topic request service ----- //
 const updateTopicRequestResponseService = async (
-  data: Pick<ITopicResponse, 'status'>,
+  data: ITopicResponse,
   topicRequestId: string,
   user: JwtPayload,
 ) => {
@@ -125,6 +125,14 @@ const updateTopicRequestResponseService = async (
       'Failed to update topic request',
     );
   }
+  console.log(data.notificationId);
+
+  await NotificationModel.findByIdAndUpdate(data.notificationId, {
+    $set: {
+      hasResponse: true,
+    },
+  });
+
 
   // ----- check if the request should now be "active" ----- //
   const atLeastOneAccepted = updatedRequest.responses.some(

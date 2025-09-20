@@ -26,6 +26,7 @@ const getUserNotificationsService = async (user: JwtPayload) => {
       id: notification?._id,
       topicId: notification?.topicId?._id,
       title: `New Notification from ${notification?.senderId?.name}`,
+      hasResponse:notification.hasResponse,
       description: `" ${notification?.senderId?.name}" has invited you to a topic room for discussing about " ${notification?.topicId?.topic}"`,
       time: getRelativeTime(notification.createdAt),
     };

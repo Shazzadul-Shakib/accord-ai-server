@@ -3,6 +3,7 @@ import { Types } from 'mongoose';
 export interface ITopicResponse {
   user: Types.ObjectId;
   status: 'pending' | 'accepted' | 'rejected';
+  notificationId: Types.ObjectId;
 }
 
 export interface ITopicRequest {
