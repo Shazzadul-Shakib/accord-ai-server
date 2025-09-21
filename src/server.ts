@@ -12,12 +12,11 @@ async function main() {
   try {
     await mongoose.connect(config.database_url as string);
 
-    server = app.listen(config.port, () => {
-    });
+    server = app.listen(config.port, () => {});
     // Initialize Socket.IO
     io = new SocketServer(server, {
       cors: {
-        origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+        origin: ['https://accord-ai-client.vercel.app'],
         methods: ['GET', 'POST'],
         credentials: true,
       },
