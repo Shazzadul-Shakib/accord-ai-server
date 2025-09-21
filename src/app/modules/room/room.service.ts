@@ -152,7 +152,9 @@ const getAllMessagesFromChatRoomService = async (
     })
     .lean();
 
-  return messages.reverse();
+  const nextCursor = messages[messages.length - 1]?.createdAt;
+
+  return { messages: messages.reverse(), nextCursor };
 };
 
 // ----- generate chat summary service ----- //
@@ -191,10 +193,11 @@ const generateChatSummaryService = async (
   const formattedChat = allMessages
     .map(msg => `${msg.sender.name}: ${msg.text}`)
     .join('\n');
+
   const chatSummary = await generateChatSummary(formattedChat, roomTopic);
 
   // ----- update chat room summary ----- //
-  const result = await ChatRoomModel.findByIdAndUpdate(
+  await ChatRoomModel.findByIdAndUpdate(
     roomId,
     {
       summary: chatSummary.summary,
@@ -204,7 +207,7 @@ const generateChatSummaryService = async (
     },
   );
 
-  return result;
+  return chatSummary;
 };
 
 export const chatRoomServices = {

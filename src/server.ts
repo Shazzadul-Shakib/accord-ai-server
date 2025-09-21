@@ -13,7 +13,6 @@ async function main() {
     await mongoose.connect(config.database_url as string);
 
     server = app.listen(config.port, () => {
-      console.log(`Accord AI server is running on port ${config.port}...`);
     });
     // Initialize Socket.IO
     io = new SocketServer(server, {

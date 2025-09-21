@@ -6,7 +6,6 @@ const objectIdSchema = z
   .string()
   .refine(val => Types.ObjectId.isValid(val), { message: 'Invalid ObjectId' });
 
-
 // Main topic request validation schema
 const topicRequestValidationSchema = z.object({
   topic: z.string().min(1, 'Topic is required'),

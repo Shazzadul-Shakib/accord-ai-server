@@ -27,8 +27,7 @@ const moduleRoutes = [
   {
     path: '/message',
     router: messageRouter,
-  }
-  
+  },
 ];
 
 moduleRoutes.forEach(route => {

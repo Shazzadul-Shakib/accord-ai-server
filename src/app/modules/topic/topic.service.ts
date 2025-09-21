@@ -125,14 +125,12 @@ const updateTopicRequestResponseService = async (
       'Failed to update topic request',
     );
   }
-  console.log(data.notificationId);
 
   await NotificationModel.findByIdAndUpdate(data.notificationId, {
     $set: {
       hasResponse: true,
     },
   });
-
 
   // ----- check if the request should now be "active" ----- //
   const atLeastOneAccepted = updatedRequest.responses.some(

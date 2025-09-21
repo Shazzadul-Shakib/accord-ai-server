@@ -32,7 +32,7 @@ const getUserNotifications = catchAsync(async (req: Request, res: Response) => {
 
 // ----- delete specificnotification controller ----- //
 const deleteNotification = catchAsync(async (req: Request, res: Response) => {
-    const { notificationId } = req.params;
+  const { notificationId } = req.params;
   await notificationServices.deleteNotificationService(
     req.user,
     notificationId as string,

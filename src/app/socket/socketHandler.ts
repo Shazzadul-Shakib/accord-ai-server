@@ -19,27 +19,23 @@ export const initializeSocket = (io: SocketServer) => {
         socket.handshake.headers.authorization?.split(' ')[1];
 
       if (!token) {
-        console.error('No token provided');
         return next(new AppError(status.UNAUTHORIZED, 'No token provided'));
       }
 
-      console.log('Verifying token:', token); // Debug log
       const decoded = jwt.verify(
         token,
         config.jwt_access_secret as string,
       ) as JwtPayload;
 
       socket.userId = decoded.userId;
-      console.log(`User ${decoded.userId} authenticated successfully`);
       next();
-    } catch (err) {
-      console.error('Authentication error:', err instanceof Error ? err.message : 'Unknown error');
+    } catch{
+    
       next(new AppError(status.UNAUTHORIZED, 'Authentication error'));
     }
   });
 
   io.on('connection', (socket: AuthenticatedSocket) => {
-    console.log(`🟢 User ${socket.userId} connected`);
 
     if (socket.userId) {
       userSockets.set(socket.userId.toString(), socket.id);
@@ -57,7 +53,6 @@ export const initializeSocket = (io: SocketServer) => {
 
     socket.on('join_room', (roomId: string) => {
       socket.join(`room:${roomId}`);
-      console.log(`📥 User ${socket.userId} joined room ${roomId}`);
     });
 
     socket.on('send_message', async ({ roomId, text, isTyping }) => {
@@ -78,7 +73,6 @@ export const initializeSocket = (io: SocketServer) => {
 
     socket.on('leave_room', (roomId: string) => {
       socket.leave(`room:${roomId}`);
-      console.log(`📤 User ${socket.userId} left room ${roomId}`);
     });
 
     socket.on('ping', () => {
@@ -86,7 +80,6 @@ export const initializeSocket = (io: SocketServer) => {
     });
 
     socket.on('disconnect', () => {
-      console.log(`🔴 User ${socket.userId} disconnected`);
       if (socket.userId) {
         userSockets.delete(socket.userId.toString());
         broadcastUserOnlineStatus(socket.userId.toString(), false);
@@ -95,7 +88,6 @@ export const initializeSocket = (io: SocketServer) => {
 
     socket.on('user_disconnect', () => {
       if (socket.userId) {
-        console.log(`🔴 User ${socket.userId} manually disconnected`);
         userSockets.delete(socket.userId.toString());
         broadcastUserOnlineStatus(socket.userId.toString(), false);
       }

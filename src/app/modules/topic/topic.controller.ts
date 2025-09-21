@@ -1,7 +1,7 @@
 import { catchAsync } from '../../utils/catchAsync';
 import { Request, Response } from 'express';
 import { sendResponse } from '../../utils/sendResponse';
-import {status} from 'http-status';
+import { status } from 'http-status';
 import { topicServices } from './topic.service';
 import { JwtPayload } from 'jsonwebtoken';
 

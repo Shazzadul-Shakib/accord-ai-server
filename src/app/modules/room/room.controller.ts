@@ -22,25 +22,23 @@ const deleteChatRoom = catchAsync(async (req: Request, res: Response) => {
 });
 
 // ----- get all chatroom for user controller ----- //
-const getAllUserChatRoom = catchAsync(
-  async (req: Request, res: Response) => {
-    const { userId } = req.user;
-    const { cursor, limit } = req.query;
+const getAllUserChatRoom = catchAsync(async (req: Request, res: Response) => {
+  const { userId } = req.user;
+  const { cursor, limit } = req.query;
 
-    const result = await chatRoomServices.getAllUserChatRoomService(
-      userId as Types.ObjectId,
-      cursor as string | undefined,
-      limit ? Number(limit) : 20,
-    );
+  const result = await chatRoomServices.getAllUserChatRoomService(
+    userId as Types.ObjectId,
+    cursor as string | undefined,
+    limit ? Number(limit) : 20,
+  );
 
-    sendResponse(res, {
-      statusCode: status.OK,
-      success: true,
-      message: 'Chatroom retrieved successfully',
-      data: result,
-    });
-  },
-);
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: 'Chatroom retrieved successfully',
+    data: result,
+  });
+});
 
 // ----- get all messages from chatroom controller ----- //
 const getAllMessagesFromChatRoom = catchAsync(
@@ -59,7 +57,10 @@ const getAllMessagesFromChatRoom = catchAsync(
       statusCode: status.OK,
       success: true,
       message: 'Chat messages retrieved successfully',
-      data: result,
+      data: {
+        messages: result.messages,
+        nextCursor: result.nextCursor,
+      },
     });
   },
 );

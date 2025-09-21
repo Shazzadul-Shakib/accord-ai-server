@@ -3,7 +3,7 @@ import { MessageModel } from './message.model';
 import { sendMessageToRoom } from '../../utils/socketUtils';
 import { ChatRoomModel } from '../room/room.model';
 import AppError from '../../errorHandlers/appError';
-import {status} from 'http-status';
+import { status } from 'http-status';
 
 // ----- Send message to room service ----- //
 const sendMessageToRoomService = async (
@@ -23,10 +23,7 @@ const sendMessageToRoomService = async (
 
   // 2. Check if user is a member of the room
   if (!chatRoom.members.some(m => m.toString() === userId.toString())) {
-    throw new AppError(
-      status.FORBIDDEN,
-      'You are not a member of this room',
-    );
+    throw new AppError(status.FORBIDDEN, 'You are not a member of this room');
   }
   // //   ----- send message realtime ----- //
   // sendMessageToRoom(roomId, userId, text, isTyping);
@@ -65,10 +62,7 @@ const deleteMessageFromRoomService = async (
 
   // ----- Check if user is a member of the room ----- //
   if (!chatRoom.members.some(m => m.toString() === userId.toString())) {
-    throw new AppError(
-      status.FORBIDDEN,
-      'You are not a member of this room',
-    );
+    throw new AppError(status.FORBIDDEN, 'You are not a member of this room');
   }
 
   // ----- Check if message exists ----- //
@@ -109,10 +103,7 @@ const updateMessageFromRoomService = async (
 
   // -----  Check if user is a member of the room ----- //
   if (!chatRoom.members.some(m => m.toString() === userId.toString())) {
-    throw new AppError(
-      status.FORBIDDEN,
-      'You are not a member of this room',
-    );
+    throw new AppError(status.FORBIDDEN, 'You are not a member of this room');
   }
 
   // ----- Check if message exists ----- //

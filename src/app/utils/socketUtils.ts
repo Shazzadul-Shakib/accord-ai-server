@@ -21,9 +21,6 @@ export const broadcastUserOnlineStatus = (
   userId: string,
   isOnline: boolean,
 ) => {
-  console.log(
-    `📡 Broadcasting status: User ${userId} is ${isOnline ? 'online' : 'offline'}`,
-  );
 
   if (isOnline) {
     onlineUsers.add(userId);
