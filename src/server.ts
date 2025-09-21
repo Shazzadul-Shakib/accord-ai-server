@@ -2,8 +2,8 @@ import mongoose from 'mongoose';
 import { Server as HTTPServer } from 'http';
 import { Server as SocketServer } from 'socket.io';
 import config from './app/config';
-import { app } from './app';
 import { initializeSocket } from './app/socket/socketHandler';
+import app from './app';
 
 let server: HTTPServer;
 let io: SocketServer;

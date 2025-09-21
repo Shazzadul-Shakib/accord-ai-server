@@ -5,7 +5,7 @@ import { globalErrorHandler } from './app/middleware/globalErrorHandler';
 import { appRoutes } from './app/routes';
 import cookieParser from 'cookie-parser';
 
-export const app: Application = express();
+const app: Application = express();
 
 // --- parsers --- //
 app.use(express.json());
@@ -32,3 +32,5 @@ app.use(globalErrorHandler);
 
 // ----- API not found handler ----- //
 app.use(notFound);
+
+export default app;
