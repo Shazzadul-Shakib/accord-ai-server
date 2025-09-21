@@ -25,13 +25,17 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
 
   // Set refresh token cookie
   res.cookie('refreshToken', result.refreshToken, {
-    httpOnly: true,
-    sameSite: 'lax',
+    httpOnly: config.node_env === 'production',
+    secure: true,
+    sameSite: config.node_env === 'production' ? 'none' : 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
   res.cookie('accessToken', result.accessToken, {
-    httpOnly: true,
-    sameSite: 'lax',
+    httpOnly: config.node_env === 'production',
+    secure: true,
+    sameSite: config.node_env === 'production' ? 'none' : 'lax',
+    maxAge: 15 * 60 * 1000, 
   });
   
   sendResponse(res, {
