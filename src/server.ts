@@ -16,7 +16,7 @@ async function main() {
     // Initialize Socket.IO
     io = new SocketServer(server, {
       cors: {
-        origin: ['https://accord-ai-client.vercel.app'],
+        origin: ['https://accord-ai-client.vercel.app',"http://localhost:3000"],
         methods: ['GET', 'POST'],
         credentials: true,
       },
