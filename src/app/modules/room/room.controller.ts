@@ -24,12 +24,11 @@ const deleteChatRoom = catchAsync(async (req: Request, res: Response) => {
 // ----- get all chatroom for user controller ----- //
 const getAllUserChatRoom = catchAsync(async (req: Request, res: Response) => {
   const { userId } = req.user;
-  const { cursor, limit } = req.query;
+  const { cursor } = req.query;
 
   const result = await chatRoomServices.getAllUserChatRoomService(
     userId as Types.ObjectId,
     cursor as string | undefined,
-    limit ? Number(limit) : 20,
   );
 
   sendResponse(res, {

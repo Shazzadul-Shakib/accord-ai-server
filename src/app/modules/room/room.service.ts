@@ -59,7 +59,6 @@ const deleteChatRoomService = async (
 const getAllUserChatRoomService = async (
   userId: Types.ObjectId,
   cursor?: string,
-  limit: number = 20,
 ) => {
   // ----- check if user exist ----- //
   const user = await UserModel.findById(userId);
@@ -89,7 +88,6 @@ const getAllUserChatRoomService = async (
       select: 'name image',
     })
     .sort({ updatedAt: -1 })
-    .limit(limit)
     .lean();
 
   // Get last message for each chat room
