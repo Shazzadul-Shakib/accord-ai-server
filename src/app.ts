@@ -11,10 +11,18 @@ const app: Application = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: ['https://accord-ai-client.vercel.app', 'http://localhost:3000'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        'http://localhost:3000',
+        'https://accord-ai-client.vercel.app',
+      ];
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
-    optionsSuccessStatus: 200,
   }),
 );
 app.use(cookieParser());
