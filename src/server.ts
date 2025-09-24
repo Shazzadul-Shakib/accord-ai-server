@@ -16,8 +16,17 @@ async function main() {
     // Initialize Socket.IO
     io = new SocketServer(server, {
       cors: {
-        origin: ['https://accord-ai-client.vercel.app',"http://localhost:3000"],
-        methods: ['GET', 'POST'],
+        origin: (origin, callback) => {
+          const allowedOrigins = [
+            'http://localhost:3000',
+            'https://accord-ai-client.vercel.app',
+          ];
+          if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+          } else {
+            callback(new Error('Not allowed by CORS'));
+          }
+        },
         credentials: true,
       },
     });

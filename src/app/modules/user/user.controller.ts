@@ -23,6 +23,18 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
   const user = req.body;
   const result = await userService.loginUser(user);
 
+  res.cookie('refreshToken', result.refreshToken, {
+    httpOnly: config.node_env === 'production',
+    secure: true,
+    sameSite: config.node_env === 'production' ? 'none' : 'strict',
+  });
+
+  res.cookie('accessToken', result.accessToken, {
+    httpOnly: config.node_env === 'production',
+    secure: true,
+    sameSite: config.node_env === 'production' ? 'none' : 'strict',
+  });
+
   sendResponse(res, {
     statusCode: status.OK,
     success: true,
