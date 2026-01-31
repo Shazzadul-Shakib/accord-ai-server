@@ -51,7 +51,7 @@ export async function generateChatSummary(
 
   // ----- Get Gemini model ----- //
   const model = genAI.getGenerativeModel({
-    model: 'gemini-2.0-flash-lite',
+    model: 'gemini-3-flash-preview',
     generationConfig: {
       temperature: 0.3, // Lower temperature for more consistent JSON output
       topP: 0.8,
@@ -86,7 +86,30 @@ export async function generateChatSummary(
     }
 
     return summaryData;
-  } catch {
+  } catch (error: unknown) {
+    console.error('Error generating chat summary:', error);
+
+    // ----- Handle rate limit errors ----- //
+    if (
+      (error instanceof Object &&
+        'status' in error &&
+        (error as Record<string, unknown>).status === 429) ||
+      (error instanceof Error && error.message.includes('429'))
+    ) {
+      throw new AppError(
+        status.TOO_MANY_REQUESTS,
+        'AI service rate limit exceeded. Please try again later.',
+      );
+    }
+
+    // ----- Handle other specific errors ----- //
+    if (error instanceof SyntaxError) {
+      throw new AppError(
+        status.INTERNAL_SERVER_ERROR,
+        'Failed to parse AI response',
+      );
+    }
+
     throw new AppError(
       status.INTERNAL_SERVER_ERROR,
       'Failed to generate chat summary',

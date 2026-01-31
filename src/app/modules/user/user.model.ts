@@ -12,6 +12,8 @@ const userSchema = new Schema<IUser, IUserModel>(
     email: {
       type: String,
       required: true,
+      unique: true,
+      index: true, // Add index for faster email queries
     },
     password: {
       type: String,

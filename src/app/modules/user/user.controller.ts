@@ -24,15 +24,17 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
   const result = await userService.loginUser(user);
 
   res.cookie('refreshToken', result.refreshToken, {
-    httpOnly: config.node_env === 'production',
-    secure: true,
-    sameSite: config.node_env === 'production' ? 'none' : 'strict',
+    httpOnly: true, // Always true for security
+    secure: config.node_env === 'production',
+    sameSite: config.node_env === 'production' ? 'none' : 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 
   res.cookie('accessToken', result.accessToken, {
-    httpOnly: config.node_env === 'production',
-    secure: true,
-    sameSite: config.node_env === 'production' ? 'none' : 'strict',
+    httpOnly: true, // Always true for security
+    secure: config.node_env === 'production',
+    sameSite: config.node_env === 'production' ? 'none' : 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 
   sendResponse(res, {
@@ -66,8 +68,10 @@ const refreshToken = catchAsync(async (req: Request, res: Response) => {
 
   // Set access token cookie
   res.cookie('accessToken', result.accessToken, {
-    httpOnly: config.node_env === 'production',
-    secure: true,
+    httpOnly: true,
+    secure: config.node_env === 'production',
+    sameSite: config.node_env === 'production' ? 'none' : 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 
   sendResponse(res, {

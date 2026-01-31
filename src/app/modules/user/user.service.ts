@@ -24,11 +24,16 @@ const registerUser = async (user: IUser) => {
 
 // ----- user login service ----- //
 const loginUser = async (user: IUser) => {
+  console.log(`[LOGIN] Attempting login for email: ${user.email}`);
+
   // ----- check if user exist by email ----- //
   const isUserExist = await UserModel.isUserExistByEmail(user.email);
   if (!isUserExist) {
+    console.log(`[LOGIN] User not found: ${user.email}`);
     throw new AppError(status.NOT_FOUND, 'User not found!');
   }
+
+  console.log(`[LOGIN] User found: ${user.email}`);
   // ----- check if password matched ----- //
   const isPasswordMatched = await UserModel.isPasswordMatched(
     user.password,
@@ -56,6 +61,7 @@ const loginUser = async (user: IUser) => {
     config.jwt_refresh_expires_in as string,
   );
 
+  console.log(`[LOGIN] Login successful for: ${user.email}`);
   return { accessToken, refreshToken };
 };
 

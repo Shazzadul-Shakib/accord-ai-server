@@ -10,9 +10,22 @@ let io: SocketServer;
 
 async function main() {
   try {
-    await mongoose.connect(config.database_url as string);
+    // MongoDB connection with timeout and pooling for production
+    await mongoose.connect(config.database_url as string, {
+      serverSelectionTimeoutMS: 30000, // 30 seconds timeout
+      socketTimeoutMS: 45000, // 45 seconds socket timeout
+      maxPoolSize: 10, // Maximum connection pool size
+      minPoolSize: 2, // Minimum connection pool size
+      maxIdleTimeMS: 10000, // Close connections after 10s idle
+      retryWrites: true,
+      retryReads: true,
+    });
 
-    server = app.listen(config.port, () => {});
+    console.log('✅ MongoDB connected successfully');
+
+    server = app.listen(config.port, () => {
+      console.log(`🚀 Server running on port ${config.port}`);
+    });
     // Initialize Socket.IO
     io = new SocketServer(server, {
       cors: {
